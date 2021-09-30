@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 from astropy.io import fits as pyfits
 import numpy as np
@@ -24,6 +24,7 @@ import CCF
 from pylab import *
 from PyAstronomy import pyasl
 import time
+from scipy.optimize import curve_fit
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -37,8 +38,8 @@ class Constants:
 	"Here I declare the constants I will use in the different functions"
 	"G,c: the gravity and speed of light constants in SI units; mearth and mmoon: the earth and moon masses in kg"
 	G,c = 6.673E-11,2.99792458E8
-	mearth, mmoon = 5.9736E24,7.349E22 
-	"the mass of the planets,moon and sun in earth masses, the ennumeration is sun, moon, mercury,venus,mars,jupiter,saturn, uranus,neptune,pluto"	
+	mearth, mmoon = 5.9736E24,7.349E22
+	"the mass of the planets,moon and sun in earth masses, the ennumeration is sun, moon, mercury,venus,mars,jupiter,saturn, uranus,neptune,pluto"
 	mplanets = np.array([332981.787,0.0123000371,0.05528,0.815,0.10745,317.83,95.19,14.536,17.147,0.0021])
 	"conversion from degrees to radians, and from hours to degrees, and from degrees to hours"
 	degtorad = np.pi/180.0
@@ -48,7 +49,7 @@ class Constants:
 	"Req: equatorial radius	f: polar flatenning , w angular speedof earth in rad/s"
 	Req = 6378136.6 #in m
 	f = 1.0/298.256420
-	w = 7.2921158554E-5 
+	w = 7.2921158554E-5
 	DaystoYear = 1.0/365.256363004
 
 def update_header(hdu,k,v,c=''):
@@ -158,7 +159,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
     	sc = sc[startfrom:,:]
     else:
 	sc = sc[startfrom:endat,:]
-    
+
     medc = int(.5*sc.shape[1])
     d = np.median(sc[:,medc-exap:medc+exap+1],axis=1)
     #print sc[:,2000]
@@ -191,7 +192,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 	if ccf[i]>ccf[i-1] and ccf[i]>ccf[i+1]:
 	    maxs.append(i)
 	i+=1
-    
+
     maxs = np.array(maxs)
     ccf = np.array(ccf)
 
@@ -294,7 +295,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 	    elif pos[i]+exap2+1 > len(d):
 		    x = ejx[int(pos[i]-exap2):]
 		    y = d[int(pos[i]-exap2):]
-	    else:	
+	    else:
 		    x = ejx[int(pos[i]-exap2):int(pos[i]+exap2+1)]
 		    y = d[int(pos[i]-exap2):int(pos[i]+exap2+1)]
 	    tx1 = np.arange(x[0]-dev,x[0],1)
@@ -334,7 +335,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
     mat = np.zeros((len(ref),sc.shape[1]))
     mat[:,medc] = ref
     i = medc -1
-	
+
     while i >=0:
 	#print i
 	d = sc[:,i]
@@ -356,7 +357,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 		    elif pos[j]+exap2+1 > len(d):
 			    x = ejx[int(pos[j]-exap2):]
 			    y = d[int(pos[j]-exap2):]
-		    else:	
+		    else:
 			    x = ejx[int(pos[j]-exap2):int(pos[j]+exap2+1)]
 			    y = d[int(pos[j]-exap2):int(pos[j]+exap2+1)]
 
@@ -426,7 +427,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 	ref = oref + cdif
 	#plot(ref,np.polyval(coef,ref))
 	#show()
-	
+
 	mat[:,i] = ref
 	i-=4
 
@@ -452,7 +453,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 		    elif pos[j]+exap2+1 > len(d):
 			    x = ejx[int(pos[j]-exap2):]
 			    y = d[int(pos[j]-exap2):]
-		    else:	
+		    else:
 			    x = ejx[int(pos[j]-exap2):int(pos[j]+exap2+1)]
 			    y = d[int(pos[j]-exap2):int(pos[j]+exap2+1)]
 
@@ -483,7 +484,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 		    		    guess = [np.max(y[:midi]),np.max(y[midi:]),x[0]+np.argmax(y[:midi]),x[0]+midi+np.argmax(y[midi:]),dev,dev]
 		    		    p, success =  scipy.optimize.leastsq(res_gauss2, guess, args=(y,x))
 			    	    tref.append(0.5*(p[2]+p[3]))
-		    
+
 		    j+=1
 
 	oref = ref.copy()
@@ -508,7 +509,7 @@ def get_them(sc,exap,ncoef,maxords=-1,startfrom=0,nsigmas=10.,mode=1,endat=-1,nc
 	    I = np.where(np.absolute(residuals)>3*rms)[0]
 	    if len(I)==0:
 		cond = False
-	
+
 	cdif = np.polyval(coef,oref)
 	ref = oref + cdif
 	#plot(ref,np.polyval(coef,ref))
@@ -582,7 +583,7 @@ def get_zero_order_number(ords,wavs):
 		val2 = val/np.add.reduce(val)
 		coef = np.polyfit(ords,val2,1)
 		print coef
-		pends.append(coef[0])	
+		pends.append(coef[0])
 		plot(ords,val2)
 	pends = np.array(pends)
 	I = np.argmin(pends**2)
@@ -634,7 +635,7 @@ def get_scat(sc,lim,span = 7, typ='median', allow_neg=False,option=0):
 		#plot(sc[:,y])
 		for j in range(len(lims)):
 			if j == 0:
-				#print lims[j] - span	
+				#print lims[j] - span
 				if lims[j] - span < 0:
 					ejx, ejy = [],[]
 				elif lims[j] - 2 * span < 0:
@@ -643,7 +644,7 @@ def get_scat(sc,lim,span = 7, typ='median', allow_neg=False,option=0):
 				else:
 					ejx=ejeX[lims[j]- 2 * span:lims[j]-span+1]
 					ejy=sc[lims[j]- 2 * span:lims[j]-span+1,y]
-				
+
 
 			else:
 				if lims[j-1] + span >= sc.shape[0] or lims[j-1] + span < 0:
@@ -675,7 +676,7 @@ def get_scat(sc,lim,span = 7, typ='median', allow_neg=False,option=0):
 					value = np.median(ejy)
 				elif typ == 'min':
 					value = np.min(ejy)
-			
+
 				if np.isnan(value)==True or np.isnan(-value)==True:
 					value = 0.
 				if value < 0 and (not allow_neg):
@@ -777,7 +778,7 @@ def clean(x,y):
 	cond = True
 	if len(I) == lI:
 		cond = False
-	
+
 	while cond:
 		iw = np.argmax(res**2)
 		x = np.delete(x,iw)
@@ -853,7 +854,7 @@ def fit(x,y,n):
 		if len(I) == 0:
 			cond = False
 	return np.around(np.polyval(coef,xo)).astype('int')
-	
+
 def bkg_flat(data,lim,span = 7):
 
 	bac = data.copy()
@@ -886,9 +887,9 @@ def bkg_flat(data,lim,span = 7):
 				L2 = lims[j]+I[0]
 			L1s.append(L1)
 			L2s.append(L2)
-			
+
 			#if j == 0:
-			#	tline[:L1 - span] = 0 
+			#	tline[:L1 - span] = 0
 			#if j == len(lims)-1:
 			#	tline[L2+span:] = 0
 			#print L1,L2
@@ -906,7 +907,7 @@ def bkg_flat(data,lim,span = 7):
 		#print L1s,L2s
 		for j in range(len(lims)):
 			tline[L1s[j]:L2s[j]+1] = 0
-		tline[:L1s[0] - span] = 0 
+		tline[:L1s[0] - span] = 0
 		tline[L2s[-1] + span:] = 0
 		I = np.where(tline!=0)[0]
 		tx = ejx[I]
@@ -947,7 +948,7 @@ def MedianCombine(ImgList,ZF=0.):
     h = pyfits.open(ImgList[0])[0]
     d = h.data
     d = OverscanTrim(d) - ZP
-    
+
     factor = 1.25
     if (n < 3):
         factor = 1
@@ -976,7 +977,7 @@ def MedianCombine_simple(ImgList,ZF=0.):
 
     h = pyfits.open(ImgList[0])[0]
     d = h.data - ZF
-    
+
     factor = 1.25
     if (n < 3):
         factor = 1
@@ -1008,7 +1009,7 @@ def FlatNormalize(S_flat_ob, S_flat_ob_simple, mid=1023):
     for j in np.arange(norders).astype('int'):
         max_val        = (scipy.signal.medfilt(S_flat_ob[j,1,int(np.around(mid-span)):int(np.around(mid+span+1))],21)).max()
         S_flat_ob_n[j,1,:]     = (S_flat_ob[j,1,:] / max_val)
-        S_flat_ob_n[j,2,:]  = S_flat_ob[j,1,:] * max_val**2 
+        S_flat_ob_n[j,2,:]  = S_flat_ob[j,1,:] * max_val**2
 
         max_val        = (scipy.signal.medfilt(S_flat_ob_simple[j,int(np.around(mid-span)):int(np.around(mid+span+1))],21)).max()
         S_flat_ob_simple_n[j,:]     = (S_flat_ob_simple[j,:] / max_val)
@@ -1067,7 +1068,7 @@ def retrace(dat, c_all,span=9):
 	#plot(dat[:,1000])
 	#show()
 	while i < span+1:
-	
+
 		mat = np.zeros(dat.shape)
 		for j in range(dat.shape[1]):
 			vec = Centers[:,j]
@@ -1080,19 +1081,19 @@ def retrace(dat, c_all,span=9):
 		vvv = vvv[II]
 		CCF.append(np.add.reduce(vvv))
 		pix.append(i)
-		
+
 
 		i+=1
 	pix = np.array(pix)
 	CCF = np.array(CCF)
-	
+
 	CCF -= np.min(CCF)
 	CCF /= np.max(CCF)
 	#print CCF
 	#plot(pix,CCF)
 	#show()
 	im = np.where(CCF == CCF.max())[0][0]
-	
+
 	jj = im
 	mi=0
 	while jj > 0:
@@ -1103,12 +1104,12 @@ def retrace(dat, c_all,span=9):
 	jj = im
 	ma = len(CCF)-1
 	while jj < len(CCF)-1:
-		
+
 		if CCF[jj-1] >= CCF[jj] and  CCF[jj+1]>= CCF[jj]:
 			ma = jj
 			break
 		jj+=1
-	
+
 	if pix[im]<0:
 		guess = [pix[im],3.0]
 	else:
@@ -1117,9 +1118,9 @@ def retrace(dat, c_all,span=9):
 	#show()
 	Gfit = optimize.leastsq(res_gauss,guess,args=(CCF[mi:ma+1],pix[mi:ma+1]))
 	shift = Gfit[0][0]
-	
+
 	#print 'yshift:', shift
-	
+
 	c_new = c_all.copy()
 	for j in range(c_all.shape[0]):
 		c_new[j] = np.polyfit( np.arange(dat.shape[1]), Cen[j]+shift, c_all.shape[1]-1 )
@@ -1203,14 +1204,14 @@ def shift_P(P,shift,c_new,ap):
 #geographical functions
 def obspos(longitude,obsradius,R0):
 	"""
-        Set the observatory position respect to geocenter in the coordinates(x,y,z)required by jplepem, 
-        x to equator/greenwich intersection, 
-        y 90 degrees east, 
+        Set the observatory position respect to geocenter in the coordinates(x,y,z)required by jplepem,
+        x to equator/greenwich intersection,
+        y 90 degrees east,
         z positive to north
         """
-	obpos = []	
+	obpos = []
 	x = obsradius*np.cos( (np.pi / 180.0) * longitude )
-	obpos.append(x)	
+	obpos.append(x)
 	y = obsradius*np.sin( (np.pi / 180.0) * longitude )
 	obpos.append(y)
 	z = R0
@@ -1229,16 +1230,16 @@ def JPLR0(lat, altitude):
 	c1 = 1.0 - e2*(2.0 - e2)*np.sin(lat)**2
 	c2 = 1.0 - e2*np.sin(lat)**2
 
-	#radius at 0 elevation	
-	R0 = Constants.Req*np.sqrt(c1/c2) 
-	
-	#the geocentric latitude 
+	#radius at 0 elevation
+	R0 = Constants.Req*np.sqrt(c1/c2)
+
+	#the geocentric latitude
 	c1 = e2*np.sin(2.0*lat)
 	c2 = 2.0*c2
-	geolat = lat - np.arctan(c1/c2) 	
-	#Calculate geocentric radius at altitude of the observatory 
+	geolat = lat - np.arctan(c1/c2)
+	#Calculate geocentric radius at altitude of the observatory
 	GeoR = R0*np.cos(geolat) + altitude*np.cos(lat)
-	
+
 	# the R0 vector is now the distance from the observatory to the declination 0 deg plane
 	R0 = R0*np.sin(abs(geolat))+altitude*np.sin(lat)
 	return GeoR,R0
@@ -1250,7 +1251,7 @@ def JPLiers(path, mjdini, mjdend):
 
 	for line in finaldata:
 		mj = line[7:15]
-		if float(mj) >= float(mjdini) and float(mj) <= float(mjdend) and len(line.split()) > 5:	
+		if float(mj) >= float(mjdini) and float(mj) <= float(mjdend) and len(line.split()) > 5:
 			c1 = line[18:27]
 			c2 = line[37:46]
 			c3 = line[58:68]
@@ -1269,7 +1270,7 @@ def PCoeff(data, trace_coeffs, Aperture, RON, Gain, NSigma, S, N, Marsh_alg,min_
                                    scipy.polyval(trace_coeffs,np.arange(data.shape[1])).astype('double'), \
                                    data.shape[0], data.shape[1], data.shape[1], Aperture, RON, Gain, \
                                    NSigma, S, N, Marsh_alg,min_col,max_col)
-    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.  
+    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.
     FinalMatrix.resize(data.shape[0],data.shape[1])   # And return the array in matrix-form.
     return FinalMatrix
 
@@ -1288,7 +1289,7 @@ def PCoeff2(pars):
                                    scipy.polyval(trace_coeffs,np.arange(GDATA.shape[1])).astype('double'), \
                                    GDATA.shape[0], GDATA.shape[1], GDATA.shape[1], Aperture, RON, Gain, \
                                    NSigma, S, N, Marsh_alg,min_col,max_col)
-    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.  
+    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.
     FinalMatrix.resize(GDATA.shape[0],GDATA.shape[1])   # And return the array in matrix-form.
     return FinalMatrix
 
@@ -1315,7 +1316,7 @@ def getSpectrum(P,data,trace_coeffs,Aperture,RON,Gain,S,NCosmic, min_col,max_col
                                             P.flatten().astype('double'), data.shape[0],\
                                             data.shape[1],data.shape[1],Aperture,RON,\
                                             Gain,S,NCosmic,min_col,max_col)
-    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.  
+    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.
     FinalMatrix.resize(3,size)                            # And return the array in matrix-form.
     return FinalMatrix
 
@@ -1333,7 +1334,7 @@ def getSpectrum2(pars):
                                             P.flatten().astype('double'), GDATA.shape[0],\
                                             GDATA.shape[1],GDATA.shape[1],Aperture,RON,\
                                             Gain,S,NCosmic,min_col,max_col)
-    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.  
+    FinalMatrix = np.asarray(Result)                      # After the function, we convert our list to a Numpy array.
     FinalMatrix.resize(3,size)                            # And return the array in matrix-form.
     return FinalMatrix
 
@@ -1343,7 +1344,7 @@ def getSimpleSpectrum(data,trace_coeffs,Aperture,min_col,max_col):
                                             data.shape[0],data.shape[1],\
                                             data.shape[1],Aperture,min_col,max_col)
     FinalMatrix = np.asarray(Result) # After the function, we convert our list to a Numpy array.
-    return FinalMatrix 
+    return FinalMatrix
 
 def getSimpleSpectrum2(pars):
     trace_coeffs = pars[0]
@@ -1355,7 +1356,7 @@ def getSimpleSpectrum2(pars):
                                             GDATA.shape[0],GDATA.shape[1],\
                                             GDATA.shape[1],Aperture,min_col,max_col)
     FinalMatrix = np.asarray(Result) # After the function, we convert our list to a Numpy array.
-    return FinalMatrix 
+    return FinalMatrix
 
 def simple_extraction(data,coefs,ext_aperture,min_extract_col,max_extract_col,npools):
 	global GDATA
@@ -1394,7 +1395,7 @@ def get_herms(horder):
     norms  = []
     herms = []
     for l in range(3,horder+1):
-        norms.append( 1.0 / np.sqrt(scipy.misc.factorial(l) * (2 ** l) ) )  
+        norms.append( 1.0 / np.sqrt(scipy.misc.factorial(l) * (2 ** l) ) )
         herms.append( scipy.special.hermite( l ) )
     return norms, herms
 
@@ -1417,7 +1418,7 @@ def XCor(spectra, mask_l, mask_h, mask_w, vel, lbary_ltopo, vel_width=30,\
 	Xcor_full   = np.zeros( (N, norders+1) )
 	sn          = np.zeros( (norders) )
 	nlines_used = np.zeros( (norders) )
-    
+
 	velocities = vel_min + np.arange( N ) * vel_step
 
 	Xcor_full[:,0] = velocities
@@ -1475,7 +1476,7 @@ def XCor(spectra, mask_l, mask_h, mask_w, vel, lbary_ltopo, vel_width=30,\
 					#	#print mask_l[II], mask_h[II], spectra[0,j,w1:w2], S,mask_w[II], signal2noise, vel_min + k*vel_step
 					#	#for z in range(len(mask_l[II])):
 					#	#	III =  np.where((spectra[0,j,w1:w2]>=mask_l[II][z])&(spectra[0,j,w1:w2]<=mask_h[II][z]))[0]
-					#	#	print spectra[0,j,w1:w2][III],S[III] 
+					#	#	print spectra[0,j,w1:w2][III],S[III]
 					#	#print Xcor_full[k,j+1]
 					#	#print snw
 					#	#print gfd
@@ -1498,24 +1499,24 @@ def XC_Herm_Fit(X,Y,back_lag=5, usemin=True, horder=20, sigma_res = 2, horder_re
         her = 0.0
         xnorm = (x-p[1])/p[2]
         for l in range(3,horder+1):
-#            norm  = 1.0 / np.sqrt(scipy.misc.factorial(l) * (2 ** l) )   
+#            norm  = 1.0 / np.sqrt(scipy.misc.factorial(l) * (2 ** l) )
 #            her  += p[4 + (l-3)] * norm*scipy.polyval( scipy.special.hermite( l ), x )
             her  += p[4 + (l-3) ] * norms[l-3] * scipy.polyval( herms[l-3], xnorm )
         return gau*(1.0 + her) + 1.0 + p[3]
-        
+
     def errfunc(p, x, y, h, norms, herms):
         clutch = 0.0
         mean = p[1]
         if (mean < np.min(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.min(x)) / 3) )
-        if (mean > np.max(x)): 
+        if (mean > np.max(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.max(x)) / 3) )
         return np.ravel( (fitfunc(p,x,h,norms, herms) - y) )  + clutch
 
     if (horder >= 3):
         n = 4 + (horder-2)
     else:
-        n = 4 
+        n = 4
 
 
     norms, herms = get_herms(horder)
@@ -1535,18 +1536,18 @@ def XC_Herm_Fit(X,Y,back_lag=5, usemin=True, horder=20, sigma_res = 2, horder_re
 
     if (horder < horder_res_herm):
         horder_res_herm = horder
-        
+
     # now run h=horder_res_herm and Gaussian fit to +- sigma_res* sigma of mean
     mean = p1[1]
     sigma = p1[2]
-    
+
     L1 = np.where( np.abs(X - mean) <= sigma_res_herm* sigma)
     horder=horder_res_herm
     if (horder >= 3):
         n = 4 + (horder-2)
     else:
         n = 4
-    
+
     if (len(L1[0]) > 0):
         norms, herms = get_herms(horder)
         p0 = p0[0:n]
@@ -1559,7 +1560,7 @@ def XC_Herm_Fit(X,Y,back_lag=5, usemin=True, horder=20, sigma_res = 2, horder_re
     L2 = np.where( np.abs(X - mean) <= sigma_res * sigma)
     # the following is just a Gaussian fit
     horder = 2
-    if (len(L2[0]) > 0):        
+    if (len(L2[0]) > 0):
         norms, herms = get_herms(horder)
         p0 = p0[0:4]
         p1_gau, success_gau = scipy.optimize.leastsq(errfunc,p0, args=(X[L2],Y[L2],horder,norms,herms))
@@ -1567,7 +1568,7 @@ def XC_Herm_Fit(X,Y,back_lag=5, usemin=True, horder=20, sigma_res = 2, horder_re
     else:
         p1_gau = np.zeros(n)
         predicted_gau = np.zeros( len(X[L2]) )
-        
+
     return p1, predicted, p1_s, predicted_s, p1_gau, predicted_gau, L1, L2
     #return p1, predicted, p1_gau, predicted_gau, L2
 
@@ -1587,13 +1588,13 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
         for l in range(3,horder+1):
             her  += p[4 + (l-3) - 1] * norms[l-3] * scipy.polyval( herms[l-3], xnorm )
         return gau*(1.0 + her) + 1.0 # + p[3]
-        
+
     def errfunc(p, x, y, h, norms, herms):
         clutch = 0.0
         mean = p[1]
         if (mean < np.min(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.min(x)) / 3) )
-        if (mean > np.max(x)): 
+        if (mean > np.max(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.max(x)) / 3) )
         return np.ravel( (fitfunc(p,x,h,norms, herms) - y) )  + clutch
 
@@ -1604,13 +1605,13 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
         for l in range(3,horder+1):
             her  += p[4 + (l-3) - 1] * norms[l-3] * scipy.polyval( herms[l-3], xnorm )
         return gau*(1.0 + her) + 1.0 # + p[3]
-        
+
     def errfunc2(p, x, y, h, norms, herms, moonv,moons):
         clutch = 0.0
         mean = p[1]
         if (mean < np.min(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.min(x)) / 3) )
-        if (mean > np.max(x)): 
+        if (mean > np.max(x)):
             clutch = 1e10*(1.0 - exp(-np.abs(mean-np.max(x)) / 3) )
         return np.ravel( (fitfunc2(p,x,h,norms, herms, moonv,moons) - y) )  + clutch
 
@@ -1630,7 +1631,7 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
         p0[0] = np.min(Y) - (1.0 + p0[3])
     else:
         p0[0] = np.max(Y) - (1.0 + p0[3])
-    
+
     p1, success = scipy.optimize.leastsq(errfunc,p0, args=(X,Y,horder,norms, herms))
     predicted = fitfunc(p1,X,horder,norms,herms)
     mean = p1[1]
@@ -1649,7 +1650,7 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
 
     L2 = np.where( np.abs(X - mean) <= sigma_res * sigma0)
 
-    if (len(L2[0]) > 0):        
+    if (len(L2[0]) > 0):
         norms, herms = get_herms(horder)
         p1_gau0, success_gau = scipy.optimize.leastsq(errfunc,p0, args=(X[L2],Y[L2],horder,norms,herms))
     else:
@@ -1662,7 +1663,7 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
 
     if moon:
 	    p1_gau0 = np.append(p1_gau0, f0)
-	    if (len(L2[0]) > 0):        
+	    if (len(L2[0]) > 0):
 		norms, herms = get_herms(horder)
 		p1_gau, success_gau = scipy.optimize.leastsq(errfunc2,p1_gau0, args=(X[L2],Y[L2],horder,norms,herms,moonv,moons))
 		predicted_gau = fitfunc2(p1_gau,X[L2],horder,norms,herms,moonv,moons)
@@ -1670,14 +1671,14 @@ def XC_Final_Fit( X, Y, usemin=True, sigma_res = 1.5, horder=20, moonv = 0., moo
 		p1_gau = np.zeros(n)
 		predicted_gau = np.zeros( len(X[L2]) )
     else:
-	    if (len(L2[0]) > 0):        
+	    if (len(L2[0]) > 0):
 		norms, herms = get_herms(horder)
 		p1_gau, success_gau = scipy.optimize.leastsq(errfunc,p1_gau0, args=(X[L2],Y[L2],horder,norms,herms))
 		predicted_gau = fitfunc(p1_gau,X[L2],horder,norms,herms)
 	    else:
 		p1_gau = np.zeros(n)
 		predicted_gau = np.zeros( len(X[L2]) )
-        
+
     return p1, predicted, p1_gau, predicted_gau, L2
 
 
@@ -1720,7 +1721,7 @@ def Average_CCF(xc_full, sn, start_order=0,sn_min=0.15, Simple=False, W=None, bo
                 if (sn[order] > sn_min):
                     ws       += weight_sn
                     xc_av    += weight_sn * CCF_norm
-    
+
     IN = np.where(xc_av!=0)[0]
     if len(IN) == 0 or ws == 0:
 	xc_av = np.ones(len(xc_av))
@@ -1730,15 +1731,15 @@ def Average_CCF(xc_full, sn, start_order=0,sn_min=0.15, Simple=False, W=None, bo
     return xc_av
 
 def IntGaussian(x,mu,sigma):
-    """ 
+    """
 
-    Returns Gaussian integrated over a pixel 
+    Returns Gaussian integrated over a pixel
 
     """
     s2 = sqrt(2)
     arg1 = (x+0.5-mu)/(s2*sigma)
     arg2 = (x-0.5-mu)/(s2*sigma)
-    ret = 0.5*(special.erf(arg1) - special.erf(arg2))    
+    ret = 0.5*(special.erf(arg1) - special.erf(arg2))
     return ret
 
 def CorGaussian(x,mu,sigma):
@@ -1779,7 +1780,7 @@ def get_rough_offset(sc,files,window=100):
 	else:
 	    xct += xc
 	i+=1
-	
+
     ind_max = np.argmax( xct )
     delta   = offs[ind_max]
     #plot(offs,xct)
@@ -1807,7 +1808,7 @@ def fit_these_lines(waves_ob,filename,spec,order,wei, rough_shift = 0.0, del_wid
 		mh = array(pixel_centers_0) + 2
 		xc,offs = XCorPix( spec, ml, mh, del_width=del_width)
 		ind_max = np.argmax( xc )
-		delta   = offs[ind_max] 
+		delta   = offs[ind_max]
 	else:
 		delta=0.
 
@@ -1894,6 +1895,8 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
             Dump_Argon=False, Dump_AllLines=False, Cheby=False, rough_shift = 0.0,\
             del_width=5.0, binning=1,line_width=4, fact=1,do_xc=True,sigmai=2.2,pixelization=False):
 
+	plotting=False
+
 	f = open(filename).readlines()
 	pixel_centers = array([])
 	wavelengths   = array([])
@@ -1913,9 +1916,17 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 		mh = array(pixel_centers_0) + 2
 		xc,offs = XCorPix( spec, ml, mh, del_width=del_width)
 		ind_max = np.argmax( xc )
-		delta   = offs[ind_max] 
+		delta   = offs[ind_max]
 	else:
 		delta=0.
+
+	if plotting:
+		plot(spec,label=order)
+		for pixels in pixel_centers_0:
+			axvline(pixels,color='gray',alpha=0.5,zorder=0)
+			axvline(pixels+delta,color='r',alpha=0.5,zorder=0)
+		legend()
+		#show()
 
 	#print "Computed offset for order ", order, " is ", delta
 	N_l = 0
@@ -1967,6 +1978,16 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 					# collect fit information
 					#reto =  fitfunc_temp(p1, X, len(pix),pixelization= pixelization)
 					#plot(X,reto,'r')
+					#Check if line is significant
+					Y_sig_check = spec[xmin-2*line_width:xmax+2*line_width+1]
+					#Y_sig_check_mean = np.median(Y_sig_check)
+					#Y_sig_check_std = np.std(Y_sig_check)
+					#treshold = Y_sig_check_mean + 2.*Y_sig_check_std
+					X_sig_check = array(range(xmin-2*line_width,xmax+2*line_width+1))
+					func = lambda x, *p: p[0]*x+p[1]
+					popt, pcov = curve_fit(func, X_sig_check, Y_sig_check,[1.,1.])
+					if plotting:
+					    plt.plot(X_sig_check,1.6*func(X_sig_check,*popt),'--')
 					wavelenghts = np.append(wavelengths,wav)
 					for j in range(len(pix)):
 						pixel_centers = np.append(pixel_centers,p1[3*j + 1])
@@ -1977,13 +1998,21 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 							centroids = np.append(centroids, Cent)
 						else:
 							centroids = np.append(centroids, -1)
+						threshold = 1.6*func(p1[3*j + 1],*popt) #+ 2.*np.std(ynew[um])
+						if p1[3*j] < threshold or p1[3*j + 1] <X_sig_check.min() or p1[3*j + 1] >X_sig_check.max():
+							I_bad = np.where(pixel_centers==p1[3*j + 1])[0]
+							bad_indices = np.hstack((np.array(bad_indices),I_bad))
 
 	#print len(pixel_centers)
 	pixel_centers2 = np.around(pixel_centers).astype('int')
 	I = np.where((pixel_centers2>=0) & (pixel_centers2<len(spec)))
 	pixel_centers2 = pixel_centers2[I]
-	#plot(pixel_centers2,spec[pixel_centers2],'go')
-	#show()
+	if plotting:
+		try:
+			plot(pixel_centers,spec[pixel_centers2],'go')
+		except ValueError:
+			plot(pixel_centers2,spec[pixel_centers2],'go')
+		show()
 	#print gfd
 
 	#I = np.where((pixel_centers>0) & (pixel_centers<2048))[0]
@@ -2002,13 +2031,22 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 		N_l -= 1
 
 	if (Cheby):
-		coeffs_pix2wav   = Cheby_Fit(pixel_centers[I], wavelengths[I], porder,len(spec))   
+		coeffs_pix2wav   = Cheby_Fit(pixel_centers[I], wavelengths[I], porder,len(spec))
 		coeffs_pix2sigma = Cheby_Fit(pixel_centers[I], sigmas[I], porder,len(spec))
 	else:
-		coeffs_pix2wav   = scipy.polyfit(pixel_centers[I], wavelengths[I], porder)    
+		coeffs_pix2wav   = scipy.polyfit(pixel_centers[I], wavelengths[I], porder)
 		coeffs_pix2sigma = scipy.polyfit(pixel_centers[I], sigmas[I], porder)
 
 	rmsms, residuals = rms_ms(coeffs_pix2wav, pixel_centers[I], wavelengths[I], len(spec), Cheby=Cheby)
+
+	if plotting:
+		subplot(313)
+		mid_wav_loc = int((0.5*len(wavelengths)))
+		mid_wav = wavelengths[mid_wav_loc]
+		axhline(rmsms/299792458.0*mid_wav,color='gray')
+		axhline(-rmsms/299792458.0*mid_wav,color='gray')
+		axhline(rmsmax/299792458.0*mid_wav,color='red',alpha=0.5)
+		axhline(-rmsmax/299792458.0*mid_wav,color='red',alpha=0.5)
 
 	if (FixEnds):
 		minI = np.min( I ) + 1
@@ -2017,10 +2055,15 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 		minI = np.min( I )
 		maxI = np.max( I )
 	#if order==26:
-	#	    plot(pixel_centers[I],residuals,'ro')
 	#	    plot([0,4096],[0,0])
-	#plot(np.arange(4096),Cheby_eval(coeffs_pix2wav,np.arange(4096),len(spec)))
-	#show()
+	if plotting:
+		subplot(311)
+		suptitle(filename)
+		plot(pixel_centers[I],wavelengths[I],'ro')
+		plot(np.arange(4096),Cheby_eval(coeffs_pix2wav,np.arange(4096),len(spec)))
+		subplot(313)
+		plot(pixel_centers[I],residuals,'ro')
+		#show()
 	#print dfgh
 	count = 0
 	while ((N_l > minlines) and (rmsms > rmsmax)):
@@ -2029,14 +2072,14 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 		I.pop( index_worst)
 		N_l -= 1
 		if (Cheby):
-			coeffs_pix2wav   = Cheby_Fit(pixel_centers[I], wavelengths[I], porder,len(spec))   
+			coeffs_pix2wav   = Cheby_Fit(pixel_centers[I], wavelengths[I], porder,len(spec))
 			coeffs_pix2sigma = Cheby_Fit(pixel_centers[I], sigmas[I], porder,len(spec))
 		else:
-			coeffs_pix2wav   = scipy.polyfit(pixel_centers[I], wavelengths[I], porder)    
+			coeffs_pix2wav   = scipy.polyfit(pixel_centers[I], wavelengths[I], porder)
 			coeffs_pix2sigma = scipy.polyfit(pixel_centers[I], sigmas[I], porder)
 		count +=1
 
-	rmsms, residuals = rms_ms(coeffs_pix2wav, pixel_centers[I], wavelengths[I], len(spec), Cheby=Cheby)    
+	rmsms, residuals = rms_ms(coeffs_pix2wav, pixel_centers[I], wavelengths[I], len(spec), Cheby=Cheby)
 
 	pci = np.around(pixel_centers).astype('int')
 	#plot(spec)
@@ -2046,12 +2089,15 @@ def Initial_Wav_Calibration(filename,spec,order,wei, porder=3, rmsmax=75, minlin
 	#plot(wavelengths[I],residuals,'ro')
 	#show()
 	#print "RMS is ", rmsms, "using ", N_l, " lines at indices ", I
-	#plot(pixel_centers[I],wavelengths[I],'ro')
-	#if order == 26:
-	#	    plot(pixel_centers[I],residuals-0.1,'bo')
-	#	    plot([0,4096],[-0.1,-0.1])
-	#	    #plot(np.arange(4096),Cheby_eval(coeffs_pix2wav,np.arange(4096),len(spec)))
-	#	    show()
+	if plotting:
+		subplot(313)
+		#if order == 26:
+		plot(pixel_centers[I],residuals-0.1,'bo')
+		#	    plot([0,4096],[-0.1,-0.1])
+		subplot(312)
+		plot(pixel_centers[I],wavelengths[I],'ro')
+		plot(np.arange(4096),Cheby_eval(coeffs_pix2wav,np.arange(4096),len(spec)))
+		show()
 	#print order, len(pixel_centers), len(I)
 	return coeffs_pix2wav, coeffs_pix2sigma, pixel_centers[I], wavelengths[I], \
         rmsms, residuals, centroids[I], sigmas[I], intensities[I]
@@ -2070,7 +2116,7 @@ def XCorPix(spectra, mask_l, mask_h, del0=0, del_width=5, del_step=0.1):
     N = int(np.ceil( (2*del_width) / del_step ).astype('int'))
 
     Xcor = np.zeros( N )
-    
+
     deltas = del_min + np.arange( N ) * del_step
 
     LL = np.where( spectra != 0 )
@@ -2094,7 +2140,7 @@ def rms_ms(coeffs_pix2wav, pixel_centers, wavelengths, npix, Cheby=False):
         central_wav = 0.5 * (scipy.polyval(coeffs_pix2wav,50.) + scipy.polyval(coeffs_pix2wav,npix-50))
 
     rms_ms = np.sqrt( np.var( residuals ) ) * 299792458.0 / central_wav
-    
+
     return rms_ms, residuals
 
 def Cheby_Fit(x,y,order,npix):
@@ -2112,7 +2158,7 @@ def Cheby_Fit(x,y,order,npix):
             ret_val += p[order-i]*chebs[i]
         return ret_val
     errfunc = lambda p,chebs,y,order: np.ravel( (fitfunc(p,chebs,order)-y) )
-    
+
     def get_chebs(x,order):
         chebs = []
         for i in range(0,order+1):
@@ -2135,11 +2181,11 @@ def Cheby_eval(p,x,npix):
     ret_val = 0.0
     for i in range(order + 1):
         ret_val += p[order - i]*scipy.special.chebyt(i)(x_norm)
-    
+
     return ret_val
-    
+
 def fitfunc_temp(p, x, n, pixelization=True):
-	
+
 	if pixelization:
 		lxo = len(x)
 		xo = x.copy()
@@ -2159,11 +2205,12 @@ def LineFit_SingleSigma(X, Y, B, mu, sigma, weight,pixelization=False):
     """
     This function fits a series of Gaussians simultaneously, given a set
     of input pixels, sigmas, and intensities
-    
+
     Sigma is the same for all lines
-    
+
     Returns (mu_i, sigm_i, int_i), i=1,.,n where n is the number of components
     """
+    plotting=False
 
     # get number of components to be fit
     n = len(mu)
@@ -2189,7 +2236,7 @@ def LineFit_SingleSigma(X, Y, B, mu, sigma, weight,pixelization=False):
 
     # Build error array
     #err = sqrt((B+Y)/gain + readnoise**2)
-    
+
     # Build input parameters list
     # length of inout parameter list: 3 * n
     p0 = np.zeros(2*n+1)
@@ -2199,10 +2246,13 @@ def LineFit_SingleSigma(X, Y, B, mu, sigma, weight,pixelization=False):
         p0[i*2+2] = mu[i]
 
     # perform fit
-    #plot(X,Y-B,'b')
+    if plotting:
+        plot(X,Y-B,'b')
     p1, success = scipy.optimize.leastsq(errfunc,p0, args=(X,n,Y-B, weight))
     #print p1
-    #plot(X,fitfunc(p1,X,n),'r')
+    if plotting:
+        x_plot=np.linspace(X.min(),X.max(),100)
+        plot(x_plot,fitfunc(p1,x_plot,n),'r')
     # build output consistent with LineFit
     p_output = np.zeros(3*n)
     for i in range(n):
@@ -2222,11 +2272,13 @@ def Fit_Global_Wav_Solution(pix_centers, wavelengths, orders, Wgt, p0, minlines=
     [89 comes from running Find_m on an image solved with order-by-order wav cal]
 
     """
+    plotting=False
+
     def fitfunc(p, x, m):
         ret = (1.0/m) * Joint_Polynomial(p,x,m)
         return ret
     errfunc = lambda p,x,m,y: np.ravel( (fitfunc(p,x,m)-y) )
- 
+
     def fitfunc_cheb(p,chebs,m):
         ret = (1.0/m) * Joint_Polynomial_Cheby(p,chebs,nx=nx,nm=nm)
         return ret
@@ -2235,38 +2287,47 @@ def Fit_Global_Wav_Solution(pix_centers, wavelengths, orders, Wgt, p0, minlines=
 
     #print order0, ntotal, npix, nx, nm, minlines, maxrms, Cheby, Inv
     #print gfd
-        
+
     if (Cheby):
+        #print 'p0='
+        #print p0
         chebs = Calculate_chebs(pix_centers, orders+order0, Inverse=Inv,order0=order0,ntotal=ntotal,npix=npix,nx=nx,nm=nm)
         p1, success =  scipy.optimize.leastsq(errfunc_cheb, p0, args=(chebs, wavelengths, orders + order0, Wgt))
         residuals    = errfunc_cheb_nw(p1, chebs, wavelengths, orders + order0)
+        if plotting:
+    	    plot(wavelengths,pix_centers,'.')
+    	    #plot(pix_centers,fitfunc_cheb(p0, chebs, orders + order0))
+    	    plot(fitfunc_cheb(p1, chebs, orders + order0),pix_centers)
+    	    show()
     else:
         p1, success = scipy.optimize.leastsq(errfunc, p0, args=(pix_centers, orders + order0, wavelengths))
         residuals    = errfunc(p1, pix_centers, orders + order0, wavelengths)
 
-    #for oo in np.unique(orders):
-    #	III = np.where(orders==oo)[0]
-    #	plot(wavelengths[III],residuals[III],'.')
-    #show()
+    for oo in np.unique(orders):
+    	III = np.where(orders==oo)[0]
+    	if plotting:
+    	    plot(wavelengths[III],residuals[III],'.')
+    if plotting:
+        show()
 
     residuals_ms = 299792458.0 * residuals / wavelengths
-    rms_ms       = np.sqrt( np.var( residuals_ms ) ) 
+    rms_ms       = np.sqrt( np.var( residuals_ms ) )
 
     N_l = len( pix_centers )
     I = range( N_l )
 
     cond = 1
     L = np.where( np.absolute(residuals_ms) > 4.0*rms_ms )
-    if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines): 
+    if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines):
         cond=0
-    
+
     print "\t\t\tStart Global culling with ", N_l, " number of lines"
     bad_wavs, bad_ords = [],[]
-    while (cond):        
+    while (cond):
         index_worst = np.argmax( np.absolute(residuals) )
 	bad_wavs.append(wavelengths[I[index_worst]])
 	bad_ords.append(orders[I[index_worst]])
-	#print orders[I[index_worst]],wavelengths[I[index_worst]],rms_ms
+	print orders[I[index_worst]],wavelengths[I[index_worst]],rms_ms
         I.pop( index_worst )
         N_l -= 1
         if (Cheby):
@@ -2278,19 +2339,22 @@ def Fit_Global_Wav_Solution(pix_centers, wavelengths, orders, Wgt, p0, minlines=
             residuals    = errfunc(p1, pix_centers[I], orders[I] + order0, wavelengths[I])
 
         residuals_ms = 299792458.0 * residuals / wavelengths[I]
-        rms_ms       = np.sqrt( np.var( residuals_ms ) ) 
+        rms_ms       = np.sqrt( np.var( residuals_ms ) )
 
         L = np.where( np.absolute(residuals_ms) > 4.*rms_ms )
     	#print rms_ms, maxrms, len(L[0])
-        if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines): 
+        if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines):
             cond=0
-        #print "Eliminated line ", index_worst, " at order ", orders[index_worst]
-        #print "RMS is ", rms_ms, " after elimination", len(L[0]), rms_ms, maxrms, N_l
-    #for oo in np.unique(orders[I]):
-    #	III = np.where(orders[I]==oo)[0]
-    #	plot(wavelengths[I][III],residuals[III],'.')
-    #	plot(np.median(wavelengths[I][III]),np.median(residuals[III]),'ko')
-    #show()
+        print "Eliminated line ", index_worst, " at order ", orders[index_worst]
+        print "RMS is ", rms_ms, " after elimination", len(L[0]), rms_ms, maxrms, N_l
+    if plotting:
+        for oo in np.unique(orders[I]):
+    	    III = np.where(orders[I]==oo)[0]
+    	    plot(wavelengths[I][III],residuals[III],'.')
+    	    plot(np.median(wavelengths[I][III]),np.median(residuals[III]),'ko')
+        show()
+        plot(wavelengths[I],pix_centers[I],'.')
+        show()
     """
     bad_wavs,bad_ords = np.array(bad_wavs), np.array(bad_ords)
     for i in np.unique(bad_ords):
@@ -2304,7 +2368,7 @@ def Fit_Global_Wav_Solution(pix_centers, wavelengths, orders, Wgt, p0, minlines=
     print "\t\t\tNumber of lines is ", N_l
     print "\t\t\t--> Achievable RV precision is ", rms_ms/np.sqrt(N_l)
 
-    return p1, pix_centers[I], orders[I], wavelengths[I], I, rms_ms, residuals 
+    return p1, pix_centers[I], orders[I], wavelengths[I], I, rms_ms, residuals
 
 def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, minlines=1000, maxrms=150, order0=89, ntotal= 70, npix=2048, Cheby=False, Inv = False,nx=5,nm=6):
     """
@@ -2316,11 +2380,13 @@ def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, 
     [89 comes from running Find_m on an image solved with order-by-order wav cal]
 
     """
+    plotting=False
+
     def fitfunc(p, p_ref,x, m):
         ret = ((1+1e-6*p)/m) * Joint_Polynomial(p_ref,x,m)
         return ret
     errfunc = lambda p,p_ref,x,m,y: np.ravel( (fitfunc(p,p_ref,x,m)-y) )
- 
+
     def fitfunc_cheb(p,p_ref,chebs,m):
         ret = ((1+1e-6*p)/m) * Joint_Polynomial_Cheby(p_ref,chebs,nx=nx,nm=nm)
         return ret
@@ -2332,6 +2398,11 @@ def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, 
 
     if (Cheby):
         chebs = Calculate_chebs(pix_centers, orders+order0, order0=order0, ntotal=ntotal, npix=npix, Inverse=Inv,nx=nx,nm=nm)
+        if plotting:
+    	    print 'len p ref=',len(p_ref)
+    	    plot(wavelengths,pix_centers,'.')
+    	    plot(fitfunc_cheb(p0,p_ref, chebs, orders + order0),pix_centers)
+    	    show()
         p1, success =  scipy.optimize.leastsq(errfunc_cheb, p0, args=(p_ref,chebs, wavelengths, orders + order0, Wgt))
         residuals    = errfunc_cheb_nw(p1, p_ref, chebs, wavelengths, orders + order0)
     else:
@@ -2339,23 +2410,23 @@ def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, 
         residuals    = errfunc(p1, p_ref, pix_centers, orders + order0, wavelengths)
 
     residuals_ms = 299792458.0 * residuals / wavelengths
-    rms_ms       = np.sqrt( np.var( residuals_ms ) ) 
+    rms_ms       = np.sqrt( np.var( residuals_ms ) )
 
     N_l = len( pix_centers )
     I = range( N_l )
 
     cond = 1
     L = np.where( np.absolute(residuals_ms) > 4.0*rms_ms )
-    if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines): 
+    if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines):
         cond=0
-    
+
     #for oo in np.unique(orders[I]):
     #	III = np.where(orders[I]==oo)[0]
     #	plot(wavelengths[I][III],residuals[III],'.')
     #show()
 
     print "\t\t\tStart Global culling with ", N_l, " number of lines"
-    while (cond):        
+    while (cond):
         index_worst = np.argmax( np.absolute(residuals) )
         I.pop( index_worst )
         N_l -= 1
@@ -2368,10 +2439,10 @@ def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, 
             residuals    = errfunc(p1, p_ref,  pix_centers[I], orders[I] + order0, wavelengths[I])
 
         residuals_ms = 299792458.0 * residuals / wavelengths[I]
-        rms_ms       = np.sqrt( np.var( residuals_ms ) ) 
+        rms_ms       = np.sqrt( np.var( residuals_ms ) )
         #print 'p1',(1e-6*p1)*299792458.0
         L = np.where( np.absolute(residuals_ms) > 4.*rms_ms )
-        if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines): 
+        if ( (len(L[0]) == 0) and (rms_ms < maxrms) ) or (N_l < minlines):
             cond=0
         #print "Eliminated line ", index_worst, " at order ", orders[index_worst]
         #print "RMS is ", rms_ms, " after elimination", len(L[0]), rms_ms, maxrms, N_l
@@ -2386,36 +2457,54 @@ def Global_Wav_Solution_vel_shift(pix_centers, wavelengths, orders, Wgt, p_ref, 
     #	plot(wavelengths[I][III],residuals[III],'.')
     #show()
 
-    return p1, pix_centers[I], orders[I], wavelengths[I], I, rms_ms, residuals 
+    return p1, pix_centers[I], orders[I], wavelengths[I], I, rms_ms, residuals
 
 def Calculate_chebs(x,m, order0=89, ntotal=70,npix=2048.,Inverse=False,nx=5,nm=6):
+    plotting=False
+
     #normalize x
     medp = float(int(0.5*npix))
     x_norm = (x-medp) / medp
-    
+    if plotting:
+        print 'Cheby params'
+        print x
+        print m
+        print x_norm
+
     if (Inverse):
         # invert and normalize m
-        im = 1.0 / m    
+        im = 1.0 / m
         im_max = 1.0 / float(order0)
         im_min = 1.0 / float(order0+ntotal)
     else:
         im = m
         im_max = float(order0+ntotal)
         im_min = float(order0)
-        
+
     delta = 0.5*(im_max - im_min)
-    m_norm = (im-im_min-delta)/delta        
-    
+    m_norm = (im-im_min-delta)/delta
+    if plotting:
+        print m_norm
+
     coefs = []
     for i in range(nx):
 	coefs.append(sp.chebyt(i+1)(x_norm))
+    if plotting:
+        print 'Cheby'
+        scatter(x_norm,sp.chebyt(i+1)(x_norm))
+        show()
     for i in range(nm):
 	coefs.append(sp.chebyt(i+1)(m_norm))
+    if plotting:
+        print 'Cheby m'
+        scatter(m_norm,sp.chebyt(i+1)(m_norm))
+        show()
+
     """
     u = sp.chebyt(1)(x_norm)
     u2 = sp.chebyt(2)(x_norm)
     u3 = sp.chebyt(3)(x_norm)
-    u4 = sp.chebyt(4)(x_norm)    
+    u4 = sp.chebyt(4)(x_norm)
     v  = sp.chebyt(1)(m_norm)
     v2 = sp.chebyt(2)(m_norm)
     v3 = sp.chebyt(3)(m_norm)
@@ -2451,7 +2540,7 @@ def Joint_Polynomial_Cheby(p,chebs,nx,nm):
 	for j in range(nm):
 	    for i in range(min(nm-j-1,nx)):
 		ret_val += p[k]*xvec[i]*mvec[j]
-		k+=1	
+		k+=1
     return ret_val
 
 def fp_base(f,n=3):
@@ -2465,7 +2554,7 @@ def fp_base(f,n=3):
     I = np.where((f<f1)&(f<f2))[0]
     xmin = x[I]
     fmin = f[I]
-    
+
     coef = np.polyfit(xmin,fmin,n)
     res = fmin - np.polyval(coef,xmin)
     rms = np.sqrt(np.mean(res**2))
@@ -2510,7 +2599,7 @@ def ccf_fp(fp,fpr,p1,order,order0=89,ntotal=70,npix=2048,Inv=True,nx=5,nm=6):
 	twav = wav*(1+v/299792458.)
 	tck = interpolate.splrep(twav,fp,k=3)
 	tfp = interpolate.splev(wav,tck)[500:-500]
-	tfp /= np.sum(tfp) 
+	tfp /= np.sum(tfp)
 	tfpr = fpr[500:-500]
 	tfpr /= np.sum(tfpr)
 	ccf.append(np.sum(tfpr*tfp))
@@ -2523,7 +2612,7 @@ def ccf_fp(fp,fpr,p1,order,order0=89,ntotal=70,npix=2048,Inv=True,nx=5,nm=6):
 	ccf  = ccf[imin:rmin+1]
 	ccf -= .5*(ccf[0]+ccf[-1])
 	ccf /= ccf.max()
-    
+
     	pg, success = scipy.optimize.leastsq(errgaufp, [0.,10.], args=(ccf, vels))
 
     	#plt.plot(vels,ccf)
@@ -2548,17 +2637,17 @@ def simbad_query_obname(obname):
     values = [
         ("scriptFIle", (pycurl.FORM_FILE, tfile))
     ]
-    output = StringIO.StringIO() 
+    output = StringIO.StringIO()
     c = pycurl.Curl()
-                
+
     c.setopt(pycurl.URL, "http://simbad.u-strasbg.fr/simbad/sim-script")
     c.setopt(c.HTTPPOST, values)
-    c.setopt(pycurl.WRITEFUNCTION, output.write) 
+    c.setopt(pycurl.WRITEFUNCTION, output.write)
     c.perform()
     c.close()
 
-    result = output.getvalue() 
-    lines = result.split('\n') 
+    result = output.getvalue()
+    lines = result.split('\n')
     result = lines[len(lines)-3]
     query_success = False
     if (len(result) == 0):
@@ -2592,17 +2681,17 @@ def simbad_query_coords(ra,dec):
     values = [
         ("scriptFIle", (pycurl.FORM_FILE, tfile))
     ]
-    output = StringIO.StringIO() 
+    output = StringIO.StringIO()
     c = pycurl.Curl()
-                    
+
     c.setopt(pycurl.URL, "http://simbad.u-strasbg.fr/simbad/sim-script")
     c.setopt(c.HTTPPOST, values)
-    c.setopt(pycurl.WRITEFUNCTION, output.write) 
+    c.setopt(pycurl.WRITEFUNCTION, output.write)
     c.perform()
     c.close()
-                    
-    result = output.getvalue() 
-    lines = result.split('\n') 
+
+    result = output.getvalue()
+    lines = result.split('\n')
     result = lines[len(lines)-3]
     query_success = False
 
@@ -2621,7 +2710,7 @@ def simbad_query_coords(ra,dec):
     return query_success, sp_type_query
 
 def Lines_mBack(thar, sd, thres_rel=3, line_w=10):
-    """ 
+    """
     Given an extracted ThAr order, return a version where the background has been removed
     """
     L = np.where(sd > 0)
@@ -2637,12 +2726,12 @@ def Lines_mBack(thar, sd, thres_rel=3, line_w=10):
     mask = np.ones( len(sd) )
     for kk in lines:
 	mask[kk-line_w:kk+line_w+1] = 0
-    
+
     # New, final background estimnate
     X = np.array( range( len( d ) ) )
     K = np.where((sd > 0) & (mask > 0))
     if len(K[0])>0:
-        bkg = np.zeros( len(sd) ) 
+        bkg = np.zeros( len(sd) )
         bkg_T = lowess(thar[K].astype('double'), X[K],frac=0.2,it=3,return_sorted=False)
         tck1 = scipy.interpolate.splrep(X[K],bkg_T,k=1)
         bkg[L] = scipy.interpolate.splev(X[L],tck1)
@@ -2654,20 +2743,20 @@ def FindLines_simple_sigma(d,sd,thres=3):
     """
     Given an array, find lines above a sigma-threshold
     """
-    L = np.where( (d > (thres*sd)) & (d > 0) )  
+    L = np.where( (d > (thres*sd)) & (d > 0) )
     lines = []
     for i in range(np.shape(L)[1]):
         j = L[0][i]
         if ((d[j] > d[j-1]) & (d[j-1] > d[j-2]) & (d[j] > d[j+1]) & (d[j+1] > d[j+2])):
             lines.append(j)
-    
+
     return lines
 
 def XC_ThAr(thar_ref, thar_comp, pixel_span):
     """
     Calculates the cross-correlation of two ThAr spectra
     """
-    
+
     I1 = np.where( thar_ref != 0 )
     I2 = np.where( thar_comp != 0 )
     x1 = np.maximum( np.min( I1 ), np.min( I2) ) + pixel_span
@@ -2683,18 +2772,18 @@ def XC_ThAr(thar_ref, thar_comp, pixel_span):
     sd2 = np.sqrt( np.var( thar_comp[I2] ) )
 
     norm = np.shape( thar_ref[I1] )[0]
- 
+
     #print x1, x2
     for k in range(N):
-        l1 = x1 + shifts[k] 
-        l2 = x2 + shifts[k]   
+        l1 = x1 + shifts[k]
+        l2 = x2 + shifts[k]
         XCor[k] = np.sum( (thar_ref[x1:x2] - mu1)* (thar_comp[l1:l2] - mu2) / (sd1 * sd2)  ) / (norm-1)
 
     return XCor, shifts
 
 def XC_Gau_Fit(X,Y,back_lag=5, usemin=1):
     """
-    Fits a Gaussian to a XC 
+    Fits a Gaussian to a XC
     """
 
     fitfunc = lambda p, x: p[0]*CorGaussian(x,p[1],p[2]) + p[3]
@@ -2731,7 +2820,7 @@ def get_mask(sp_type_query,T_eff, query_success):
 			sp_type = 'G2'
 		else:
 			print "Probable problem, spectral type not in the books, using G-mask"
-			sp_type = 'G2'    
+			sp_type = 'G2'
 	else:
 		if (T_eff >= 4300) and (T_eff < 5350):
 			print "Using K mask"
@@ -2782,10 +2871,10 @@ def get_cont_single(W,F,E,nc=3,ll=3,lu=3,span=10,fact=3.,frac=0.3):
 			fact +=1
 		if fact>20:
 			return np.array([0,np.max(scipy.signal.medfilt(F,21))])
-		
+
 	gw,gf = np.array(good_w),np.array(good_f)
 
-	rw,re,rd = np.array(rw),np.array(re),np.array(rd) 
+	rw,re,rd = np.array(rw),np.array(re),np.array(rd)
 	#plot(rw,rd,'ro')
 	#plot(rw,fact*re,'bo')
 	#show()
@@ -2807,8 +2896,8 @@ def get_cont_single(W,F,E,nc=3,ll=3,lu=3,span=10,fact=3.,frac=0.3):
 			gf = np.delete(gf,IO)
 		counter +=1
 	return coef
-	
-		
+
+
 
 def get_cont(W,F,nc=3,ll=1.,lu = 5.,frac=0.1,window=21):
 
@@ -2824,7 +2913,7 @@ def get_cont(W,F,nc=3,ll=1.,lu = 5.,frac=0.1,window=21):
 		I = np.where(f!=0)[0]
 		w,f = w[I],f[I]
 		I = np.where(w>=wav[0])[0]
-		
+
 		if len(I)>5:
 			J = np.where(wav<w[-1])[0]
 			#print w[I]
@@ -2897,10 +2986,10 @@ def get_cont(W,F,nc=3,ll=1.,lu = 5.,frac=0.1,window=21):
 			I = np.where((res<lu*dev)&(res>-ll*dev))[0]
 			J1 = np.where(res>=lu*dev)[0]
 			J2 = np.where(res<=-ll*dev)[0]
-		
+
 			if (len(J1)==0 and len(J2)==0) or len(tw)<frac*ori:
 				cond = False
-		
+
 		#plot(tw, np.polyval(coef,tw))
 		#plot(tw, np.polyval(coef,tw) +lu*dev)
 		#plot(tw, np.polyval(coef,tw) -ll*dev)
@@ -2918,8 +3007,8 @@ def get_cont(W,F,nc=3,ll=1.,lu = 5.,frac=0.1,window=21):
 def get_lunar_props(ephem,gobs,Mcoo,Mp,Sp,res,RA,DEC):
     mephem = ephem.Moon()
     mephem.compute(gobs)
-    pfm = ephem.previous_full_moon(gobs.date)  
-    nfm = ephem.next_full_moon(gobs.date)  
+    pfm = ephem.previous_full_moon(gobs.date)
+    nfm = ephem.next_full_moon(gobs.date)
     pnm = ephem.previous_new_moon(gobs.date)
     nnm = ephem.next_new_moon(gobs.date)
     if gobs.date - pnm < gobs.date - pfm:
@@ -2958,11 +3047,11 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 	#dic = pickle.load(open('/data/echelle/coralie/red/20121110/CORALIE.2012-11-11T08:38:58.HD72673_XC_G2.pkl','r'))
 	#vels = dic['vels']
 	#xc_av = dic['xc_av']
-	
+
 	xc_av = xc_av - xc_av.min()
-	
+
 	min_index = np.argmin(xc_av) #index with near minimum of CCF
-	
+
 	lim_inf, lim_sup = 0, len(vels)-1
 
 	i = min_index
@@ -2992,7 +3081,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 	for i in range(len(xc_av[lim_inf:min_index+1][::-1])):
 		finf.write(str(vels[lim_inf:min_index+1][::-1][i])+'\t'+str(xc_av[lim_inf:min_index+1][::-1][i])+'\n')
 	finf.close()
-	
+
 	fsup = open('/home/rabrahm/testsup.txt','w')
 	for i in range(len(xc_av[min_index:lim_sup+1])):
 		fsup.write(str(vels[min_index:lim_sup+1][i])+'\t'+str(xc_av[min_index:lim_sup+1][i])+'\n')
@@ -3013,7 +3102,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 			xc_vec = np.arange(xc_av[min_index],xc_av[lim_inf],0.01)
 		else:
 			xc_vec = np.arange(xc_av[min_index],xc_av[lim_sup],0.01)
-	
+
 		interp_vels_inf = interpolate.splev(xc_vec, tck_inf, der=0)
 		interp_vels_sup = interpolate.splev(xc_vec, tck_sup, der=0)
 		der_interp_vels_inf = interpolate.splev(xc_vec, tck_inf, der=1)
@@ -3021,7 +3110,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 		#print interp_vels_inf
 		#print interp_vels_sup
 		bisect = 0.5 * (interp_vels_inf + interp_vels_sup)
-	
+
 		I_bottom = np.where((xc_vec > bot_i) & (xc_vec < bot_f))[0]
 		I_top = np.where((xc_vec > top_i) & (xc_vec < top_f))[0]
 		span = bisect[I_top].mean() - bisect[I_bottom].mean()
@@ -3042,9 +3131,9 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 		slope = 0
 	return span,der_bottom,der_top, slope, stat
 
-def calc_bss2(vels,xc,coef, bot_i=0.15, bot_f=0.4, top_i=0.6, top_f=0.9, dt=0.01,fw=False):
+def calc_bss2(vels,xc,coef, bot_i=0.15, bot_f=0.4, top_i=0.6, top_f=0.9, dt=0.01):
 	try:
-		
+
 		I1 = np.where((vels>coef[1]-3*coef[2]) & (vels<coef[1]) )[0]
 		I2 = np.where((vels<coef[1]+3*coef[2]) & (vels>coef[1]) )[0]
 		I3 = np.where(vels<coef[1]-4*coef[2])[0]
@@ -3094,25 +3183,9 @@ def calc_bss2(vels,xc,coef, bot_i=0.15, bot_f=0.4, top_i=0.6, top_f=0.9, dt=0.01
 			dp-=dt
 		vecb = np.array(vecb)
 
-		if fw:
-			lb = np.where(x1>0.5)[0][0]
-			m = (v1[lb] - v1[lb-1])/(x1[lb]-x1[lb-1])
-			n = v1[lb] - m*x1[lb]
-			bs1 = m*0.5+n
-
-			lb = np.where(x2>0.5)[0][-1]
-			m = (v2[lb] - v2[lb+1])/(x2[lb]-x2[lb+1])
-			n = v2[lb] - m*x2[lb]
-			bs2 = m*0.5+n
-			fwhm = bs2 - bs1
-			return np.median(vecb) - np.median(vect), fwhm
-		else:
-			return np.median(vecb) - np.median(vect) 
+		return np.median(vecb) - np.median(vect)
 	except:
-		if fw:
-			return -999.0,-999.0
-		else:
-			return -999.0
+		return -999.0
 
 def gauss_samp(p,l,mu):
 	A,B,sig = p[0],p[1],p[2]
@@ -3151,11 +3224,11 @@ def convolve(wav,flx,R):
     return NF
 
 def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
-	
+
 	xc_av = xc_av - xc_av.min()
-	
+
 	min_index = np.argmin(xc_av) #index with near minimum of CCF
-	
+
 	lim_inf, lim_sup = 0, len(vels)-1
 
 	i = min_index
@@ -3185,7 +3258,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 	for i in range(len(xc_av[lim_inf:min_index+1][::-1])):
 		finf.write(str(vels[lim_inf:min_index+1][::-1][i])+'\t'+str(xc_av[lim_inf:min_index+1][::-1][i])+'\n')
 	finf.close()
-	
+
 	fsup = open('/home/rabrahm/testsup.txt','w')
 	for i in range(len(xc_av[min_index:lim_sup+1])):
 		fsup.write(str(vels[min_index:lim_sup+1][i])+'\t'+str(xc_av[min_index:lim_sup+1][i])+'\n')
@@ -3206,7 +3279,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 			xc_vec = np.arange(xc_av[min_index],xc_av[lim_inf],0.01)
 		else:
 			xc_vec = np.arange(xc_av[min_index],xc_av[lim_sup],0.01)
-	
+
 		interp_vels_inf = interpolate.splev(xc_vec, tck_inf, der=0)
 		interp_vels_sup = interpolate.splev(xc_vec, tck_sup, der=0)
 		der_interp_vels_inf = interpolate.splev(xc_vec, tck_inf, der=1)
@@ -3214,7 +3287,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 		#print interp_vels_inf
 		#print interp_vels_sup
 		bisect = 0.5 * (interp_vels_inf + interp_vels_sup)
-	
+
 		I_bottom = np.where((xc_vec > bot_i) & (xc_vec < bot_f))[0]
 		I_top = np.where((xc_vec > top_i) & (xc_vec < top_f))[0]
 		span = bisect[I_top].mean() - bisect[I_bottom].mean()
@@ -3236,7 +3309,7 @@ def calc_bss(vels, xc_av, bot_i=0.1, bot_f=0.4, top_i=0.6, top_f=0.85):
 	return span,der_bottom,der_top, slope, stat
 
 def cor_thar(spec, span=10, filename='/data/echelle/ecpipe/DuPont/wavcals/',binning=1, di=0.1):
-	
+
 	f = open(filename).readlines()
 
 	pixel_centers_0 = []
@@ -3271,21 +3344,21 @@ def cor_thar(spec, span=10, filename='/data/echelle/ecpipe/DuPont/wavcals/',binn
 
 	while vi <= vf:
 		mp = MP.copy() + vi
-		
+
 		mv = MV.copy()
 
 		I = np.where(mp < 0.0)[0]
-		
+
 		if len(I) > 0:
-			
+
 			comp = mv[I]
 			mp = np.delete(mp,I)
 			mv = np.delete(mv,I)
 			mv = np.hstack([mv,comp])
 		I = np.where(mp > float(len(spec)-1))[0]
-		
+
 		if len(I) > 0:
-			
+
 			comp = mv[I]
 			mp = np.delete(mp,I)
 			mv = np.delete(mv,I)
@@ -3344,7 +3417,7 @@ def plot_CCF(xc_dict,moon_dict,path='XC.pdf'):
     ax1.plot(vels[Ls2], XCmodelgau,'r-',label='Gaussian fit')
     if moonmatters:
         ax1.plot(vels[Ls2_m], XCmodelgau_m,'g-',label='Double Gaussian fit')
-   
+
     if refvel > vels[0] and refvel < vels[-1]:
         ax1.axvline(refvel,linestyle='--',color='k', label = 'RV Moon')
     ax1.text(vels[0], xc_av.min(), moon_state + ' moon:\nseparation: '+str(round(moonsep,1))+' deg\nillumination: '+str(int(round(lunation,2)*100))+' %\naltitude: '+ str(mephem.alt)+'\nTexp = '+str(int(round(texp))) +' s', style='italic',fontsize=7)
@@ -3416,7 +3489,7 @@ def get_mask_reffile(obname,reffile='reffile.txt',base='../../xc_masks/'):
         xc_mask = xc_masks[2]
 
     return sp_type, xc_mask
-    
+
 def get_mask_query(sp_type_query,base='../../xc_masks/'):
     xc_masks = [base+'G2.mas',\
                 base+'K5.mas',\
@@ -3440,8 +3513,8 @@ def get_mask_query(sp_type_query,base='../../xc_masks/'):
         sp_type = 'G2'
     else:
         print "Probable problem, spectral type not in the books according to simbad, using G-mask"
-        mask = xc_masks[0]   
-        sp_type = 'G2'    
+        mask = xc_masks[0]
+        sp_type = 'G2'
     return sp_type, mask
 
 def get_mask_teff(T_eff,base='../../xc_masks/'):
@@ -3504,7 +3577,7 @@ def identify_order(thar, path, window=100,di=0.5):
 	ccfs,shifts,ors = np.array(ccfs),np.array(shifts),np.array(ors)
 	im = np.argmax(ccfs)
 	return ors[im],shifts[im]
- 
+
 
 def simbad_coords(obname,mjd):
 	if obname.lower() == 'alphacent':
@@ -3562,7 +3635,7 @@ def simbad_coords(obname,mjd):
 	elif obname.lower() == 'iotara':
 		obname = 'iot ara'
 	elif obname.lower() == 'qvtel':
-		obname = 'qv tel'			
+		obname = 'qv tel'
 	elif obname.lower() == 'taucet':
 		obname = 'tau cet'
 	elif obname.lower() == 'pi2ori':
@@ -3592,7 +3665,7 @@ def simbad_coords(obname,mjd):
 			tf.write("query id %s\n" % ( obname ) )
 			tf.close()
 			values = [("scriptFIle", (pycurl.FORM_FILE, tfile))]
-			output = StringIO.StringIO() 
+			output = StringIO.StringIO()
 			c = pycurl.Curl()
 			c.setopt(pycurl.URL, paths[i])
 			c.setopt(c.HTTPPOST, values)
@@ -3604,11 +3677,11 @@ def simbad_coords(obname,mjd):
 			else:
 				i=0
 			print 'Trying again to perform query to SIMBAD, changing to', paths[i]
-			
+
 		else:
 			cond = False
 	c.close()
-	result = output.getvalue() 
+	result = output.getvalue()
 	lines = result.split('\n')
 	info = lines[6].split('|')
 	print info

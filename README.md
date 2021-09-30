@@ -1,4 +1,7 @@
 # ceres
+
+__This version is built to extend the wavelength coverage of the FEROS pipeline! For installation instructions check this [README](https://github.com/astrobatty/ceres/blob/feros_extended_wavelength/feros/README.md).__
+
 A set of pipelines and routines for echelle spectrographs.
 
 Authors: Rafael Brahm, Andrés Jordán, Néstor Espinoza. If you make use of this code, please cite [Brahm et al 2017](https://ui.adsabs.harvard.edu/#abs/2017PASP..129c4002B/abstract).

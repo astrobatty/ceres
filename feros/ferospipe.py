@@ -1,7 +1,7 @@
 import sys
 
 import matplotlib
-matplotlib.use("Agg") 
+#matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -65,7 +65,7 @@ lamp             = str(args.lamp)
 ####### GLOBAL VARIABLES #####
 ## perhaps put into options ##
 force_pre_process  = False
-force_flat_extract = False 
+force_flat_extract = False
 force_thar_extract = False
 force_thar_wavcal  = False
 force_tharxc       = False
@@ -80,7 +80,7 @@ bad_colummn        = True
 Inverse_m          = True
 use_cheby          = True
 
-MRMS               = 90   # max rms in m/s, global wav solution
+MRMS               = 300   # max rms in m/s, global wav solution
 
 trace_degree       = 4
 Marsh_alg          = 0
@@ -88,17 +88,23 @@ ext_aperture       = 6
 NSigma_Marsh       = 10
 NCosmic_Marsh      = 10
 S_Marsh            = 0.4
-N_Marsh            = 4      # grado polinomio 
+N_Marsh            = 4      # grado polinomio
 min_extract_col    = 50
 max_extract_col    = 4000
 
 porder_single = 5
-ncoef_x            = 5#6
-ncoef_m            = 7#7
+ncoef_x            = 6#6
+ncoef_m            = 22#7
 npar_wsol = (min(ncoef_x,ncoef_m) + 1) * (2*max(ncoef_x,ncoef_m) - min(ncoef_x,ncoef_m) + 2) / 2
-nconts = np.array([2,2,3,3,2,3,3,3,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-lim_iz = np.array([100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,150,200,250,300,350,400,450,500,500,800])
-
+#nconts = np.array([2,2,2,2,2,2,\
+#    2,2,3,3,2,3,3,3,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+nconts = np.array([2,2,2,2,2,2,2,2,\
+                2,2,3,3,2,3,3,3,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]) #Continuum fit order
+#lim_iz = np.array([0,0,0,100,100,100,\
+#    100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,150,200,250,300,350,400,450,500,500,800])
+lim_iz = np.array([0,0,100,200,200,450,550,600,400,500,500,650,700,700,700,700,\
+850,850,900,900,900,1000,1000,1050,1100,1150,1200,1250,1300,\
+1350,1400,1400,800]) #Replace this number of pixels at the begining with 0
 
 if dirin[-1] != '/':
     dirin = dirin + '/'
@@ -119,10 +125,10 @@ if reffile == 'default':
 
 models_path = base+"data/COELHO_MODELS/R_40000b/"
 order_dir   = base+"feros/wavcals/"
- 
-o0  = 8
-OO0 = 26
-n_useful = 25    # up to which order do we care?
+
+o0  = 0 #2
+OO0 = 6
+n_useful = 33 #31 # up to which order do we care?
 thar_end = '.harps.3iwdat'
 
 # file containing the log
@@ -157,7 +163,7 @@ if (pre_process == 1):
     hdu.writeto(dirout+'MasterBias.fits')
     print "\t\t-> Masterbias: done!"
 
-    # median combine list of flats  
+    # median combine list of flats
     Flat, RO_flat, GA_flat = ferosutils.MedianCombine(flats, zero_bo=True, zero=dirout+'MasterBias.fits')
     # save this file for later reference
     hdu = pyfits.PrimaryHDU( Flat )
@@ -248,7 +254,7 @@ if ( os.access(P_ob_fits,os.F_OK) == False )             or ( os.access(P_co_fit
 	#show()
 	#print gfd
 	#Flat -= bac
-	
+
 	P_ob = GLOBALutils.obtain_P(Flat,c_ob,ext_aperture,RO_flat,\
                                     GA_flat,NSigma_Marsh, S_Marsh, \
 				    N_Marsh, Marsh_alg, min_extract_col,\
@@ -265,14 +271,14 @@ if ( os.access(P_ob_fits,os.F_OK) == False )             or ( os.access(P_co_fit
 		os.remove( P_ob_fits )
 	if (os.access(P_co_fits,os.F_OK)):
 		os.remove( P_co_fits )
-	    
+
 	hdu = pyfits.PrimaryHDU( P )
 	hdu.writeto( P_fits )
 	hdu = pyfits.PrimaryHDU( P_ob )
 	hdu.writeto( P_ob_fits )
 	hdu = pyfits.PrimaryHDU( P_co )
 	hdu.writeto( P_co_fits )
-	    
+
 	print "\t\t\tNo extracted flat object spectra found or extraction forced, extracting and saving..."
 
 	S_flat_ob  = GLOBALutils.optimal_extraction(Flat,P_ob,c_ob,ext_aperture,\
@@ -281,24 +287,24 @@ if ( os.access(P_ob_fits,os.F_OK) == False )             or ( os.access(P_co_fit
 
 	# write P_on and S_flat_ob as fits files
 	if (os.access(S_flat_ob_fits,os.F_OK)):
-		os.remove( S_flat_ob_fits )   
-		   
+		os.remove( S_flat_ob_fits )
+
 	hdu = pyfits.PrimaryHDU( S_flat_ob )
 	hdu.writeto( S_flat_ob_fits )
-	   
+
 	print "\t\t\tNo extracted flat comparison spectra found or extraction forced, extracting and saving..."
 	S_flat_co  = GLOBALutils.optimal_extraction(Flat,P_co,c_co,ext_aperture,RO_flat,GA_flat,\
                                                 S_Marsh,NCosmic_Marsh,min_extract_col,\
-                                                max_extract_col,npools) 
+                                                max_extract_col,npools)
 
 	# write P_on and S_flat_co as fits files
-	    
+
 	if (os.access(S_flat_co_fits,os.F_OK)):
 		os.remove( S_flat_co_fits )
-	    
+
 	hdu = pyfits.PrimaryHDU( S_flat_co )
 	hdu.writeto( S_flat_co_fits )
-	   
+
 else:
         print "\t\tExtracted flat object spectra found, loading..."
         print "\t\tExtracted flat comparison spectra found, loading..."
@@ -332,7 +338,7 @@ for fsim in ThAr_Ne_ref:
     thar_fits_co = dirout + fsim.split('/')[-1][:-4]+'spec.co.fits.S'
     thar_fits_ob_simple = dirout + fsim.split('/')[-1][:-4]+'spec.simple.ob.fits.S'
     thar_fits_co_simple = dirout + fsim.split('/')[-1][:-4]+'spec.simple.co.fits.S'
-  
+
     if ( os.access(thar_fits_ob,os.F_OK) == False ) or \
        ( os.access(thar_fits_co,os.F_OK) == False ) or \
        ( os.access(thar_fits_ob_simple,os.F_OK) == False ) or \
@@ -345,7 +351,7 @@ for fsim in ThAr_Ne_ref:
 	thar_S_ob  = GLOBALutils.optimal_extraction(dthar,P_ob,c_ob,ext_aperture,RO_thar, GA_thar,S_Marsh,100.,min_extract_col,max_extract_col,npools)
         thar_Ss_co = GLOBALutils.simple_extraction(dthar,c_co,ext_aperture,min_extract_col,max_extract_col,npools)
 	thar_S_co  = GLOBALutils.optimal_extraction(dthar,P_co,c_co,ext_aperture,RO_thar, GA_thar,S_Marsh,100.,min_extract_col,max_extract_col,npools)
-	
+
         if (os.access(thar_fits_ob,os.F_OK)):
             os.remove( thar_fits_ob )
         if (os.access(thar_fits_co,os.F_OK)):
@@ -354,7 +360,7 @@ for fsim in ThAr_Ne_ref:
             os.remove( thar_fits_ob_simple )
         if (os.access(thar_fits_co_simple,os.F_OK)):
             os.remove( thar_fits_co_simple )
-            
+
         hdu = pyfits.PrimaryHDU( thar_S_ob )
         hdu.writeto( thar_fits_ob )
         hdu = pyfits.PrimaryHDU( thar_S_co )
@@ -371,12 +377,12 @@ sorted_ThAr_Ne_dates = np.argsort( ThAr_Ne_ref_dates )
 c_p2w,c_p2w_c = [],[]
 print "\n\tWavelength solution of ThAr calibration spectra:"
 for i in range(len(sorted_ThAr_Ne_dates)):
-    index      = sorted_ThAr_Ne_dates[i]  
+    index      = sorted_ThAr_Ne_dates[i]
     hd         = pyfits.getheader(ThAr_Ne_ref[index])
     wavsol_pkl = dirout + ThAr_Ne_ref[index].split('/')[-1][:-4]+'wavsolpars.pkl'
-    
+
     if ( os.access(wavsol_pkl,os.F_OK) == False ) or (force_thar_wavcal):
-        print "\t\tComputing wavelength solution of ThAr file", ThAr_Ne_ref[index] 
+        print "\t\tComputing wavelength solution of ThAr file", ThAr_Ne_ref[index]
 
         hthar        = pyfits.open( ThAr_Ne_ref[index] )
         mjd, mjd0    = ferosutils.mjd_fromheader( hthar )
@@ -390,7 +396,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
         iv_thar_ob     = thar_S_ob[:,2,:]
         lines_thar_co  = thar_S_co[:,1,:]
         iv_thar_co     = thar_S_co[:,2,:]
-	
+
         All_Pixel_Centers = np.array([])
         All_Wavelengths   = np.array([])
         All_Orders        = np.array([])
@@ -407,20 +413,28 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 	order   = o0
 	mid_wav = []
 	mid_col_wv = []
-	
+
         while order < o0 + n_useful:
             order_s = str(order+1)
             if (order < 9):
                 order_s = '0'+str(order+1)
-            
+
             thar_order_orig = lines_thar_ob[order,:]
             IV              = iv_thar_ob[order,:]
             wei             = np.sqrt( IV )
             bkg             = ferosutils.Lines_mBack(thar_order_orig, IV,  thres_rel=3)
             thar_order      = thar_order_orig - bkg
 
-            coeffs_pix2wav, coeffs_pix2sigma, pixel_centers, wavelengths,\
-	    rms_ms, residuals, centroids, sigmas, intensities =\
+            if order<7:
+                coeffs_pix2wav, coeffs_pix2sigma, pixel_centers, wavelengths,\
+	               rms_ms, residuals, centroids, sigmas, intensities =\
+					 GLOBALutils.Initial_Wav_Calibration(order_dir+'order_'+\
+					 order_s+thar_end, thar_order, order, wei, rmsmax=800, \
+					 minlines=15,FixEnds=False,Dump_Argon=dumpargon,\
+					 Dump_AllLines=True, Cheby=use_cheby,porder=ncoef_x,del_width=4.0)
+            else:
+                coeffs_pix2wav, coeffs_pix2sigma, pixel_centers, wavelengths,\
+	               rms_ms, residuals, centroids, sigmas, intensities =\
 					 GLOBALutils.Initial_Wav_Calibration(order_dir+'order_'+\
 					 order_s+thar_end, thar_order, order, wei, rmsmax=100, \
 					 minlines=30,FixEnds=False,Dump_Argon=dumpargon,\
@@ -435,9 +449,9 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 	    mid_wav.append(GLOBALutils.Cheby_eval(coeffs_pix2wav,int(.25*len(thar_order)), len(thar_order)))
             wavss.append(GLOBALutils.Cheby_eval(coeffs_pix2wav,int(len(thar_order)/2.), len(thar_order)))
 
-            orss.append(float(order))  
-       
-            if (order == 16): 
+            orss.append(float(order))
+
+            if (order == 16):
                 if (use_cheby):
                     Global_ZP = GLOBALutils.Cheby_eval( coeffs_pix2wav, int(.5*len(thar_order)), len(thar_order) )
                 else:
@@ -471,6 +485,12 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 	axhline(0.)
 	show()
 	"""
+        #np.savetxt("All_Pixel_Centers_orders_2-33",All_Pixel_Centers)
+        #np.savetxt("All_Wavelengths_orders_2-33",All_Wavelengths)
+        #np.savetxt("All_Orders_orders_2-33",All_Orders)
+        #np.savetxt("All_Intensities_orders_2-33",All_Intensities)
+        #exit()
+
         p0    = np.zeros( npar_wsol )
         p0[0] =  (16+OO0) * Global_ZP
         p1, G_pix, G_ord, G_wav, II, rms_ms, G_res = \
@@ -478,6 +498,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
                                                 np.ones(All_Intensities.shape), p0, Cheby=use_cheby,\
                                                 maxrms=MRMS, Inv=Inverse_m,minlines=1200,order0=OO0, \
                                                 ntotal=n_useful,npix=len(thar_order),nx=ncoef_x,nm=ncoef_m)
+        print 'len p1=',len(p1)
 
 	"""
 	ejxx = np.arange(4096)
@@ -487,7 +508,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 		#m = G_ord+OO0
 		#m2 = m[I][0]+np.zeros(len(ejxx))
 		#chebs = ferosutils.Calculate_chebs(ejxx, m2, OO0, n_useful,4096,1,Inverse=Inverse_m)
-		#ret = (1.0/m2) * FEROSutils.Joint_Polynomial_Cheby(p1, chebs)	
+		#ret = (1.0/m2) * FEROSutils.Joint_Polynomial_Cheby(p1, chebs)
 		plot(G_wav[I],G_res[I],'.')
 		#plot(ejxx,ret,'k')
 	#plot(G_pix,G_wav,'ro')
@@ -507,7 +528,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
             order_s = str(order+1)
             if (order < 9):
                 order_s = '0'+str(order+1)
-            
+
             thar_order_orig = lines_thar_co[order,:]
             IV              = iv_thar_co[order,:]
             wei             = np.sqrt( IV )
@@ -530,7 +551,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
             All_Intensities_co   = np.append( All_Intensities_co, intensities )
 	    All_residuals_co     = np.append( All_residuals_co, residuals )
             order+=1
-	
+
         p1_co, G_pix_co, G_ord_co, G_wav_co, II_co, rms_ms_co, G_res_co = \
             GLOBALutils.Fit_Global_Wav_Solution(All_Pixel_Centers_co, All_Wavelengths_co, All_Orders_co,\
                                                 np.ones(All_Intensities_co.shape), p1, Cheby=use_cheby,\
@@ -548,7 +569,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 	#show()
 
 	spec_ob,spec_co = np.zeros((2,n_useful,len(thar_order))),np.zeros((2,n_useful,len(thar_order)))
-	equis = np.arange( len(thar_order) )        
+	equis = np.arange( len(thar_order) )
 	order = o0
 	ind   = 0
         while order < n_useful+o0:
@@ -572,8 +593,8 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 		os.system('rm ' + dirout + ThAr_Ne_ref[index].split('/')[-1][:-5]+'_sp_co.fits')
 	hdu_co.writeto(dirout + ThAr_Ne_ref[index].split('/')[-1][:-5]+'_sp_co.fits')
 
-        # end COMPARISON orders. 
-
+        # end COMPARISON orders.
+        print 'len p1 to be pickled=',len(p1)
         pdict = {'c_p2w':c_p2w,'p1':p1,'mjd':mjd, 'G_pix':G_pix, 'G_ord':G_ord,\
 		 'G_wav':G_wav, 'II':II, 'rms_ms':rms_ms,'G_res':G_res,\
 		 'All_Centroids':All_Centroids, 'All_Wavelengths':All_Wavelengths,\
@@ -598,7 +619,7 @@ p_mjds   = []
 refidx = 0
 fname = dirout +'thar_shifts.pdf'
 dct_shfts = {}
-        
+
 force_shift = False
 if os.access(dirout+'shifts.pkl',os.F_OK):
     dct_shfts = pickle.load(open(dirout+'shifts.pkl','r'))
@@ -610,8 +631,9 @@ if os.access(dirout+'shifts.pkl',os.F_OK):
 else:
     force_shift = True
 #"""
-print len(ThAr_all) 
+print len(ThAr_all)
 if force_shift and len(sorted_ThAr_Ne_dates)>6:
+    '''Calculate shifts between each ThAr spectra'''
     f, axarr = plt.subplots(len(sorted_ThAr_Ne_dates), sharex=True,figsize=(5, 30))
     Thar_shifts_out = dirout + 'ThAr_Ne_shifts.dat'
     difs = 0
@@ -650,7 +672,7 @@ if force_shift and len(sorted_ThAr_Ne_dates)>6:
         p_shifts = np.array(p_shifts)
         p_shifts_ob = np.array(p_shifts_ob)
         dif = np.absolute(np.mean(p_shifts-p_shifts_ob))
-        vec_dif.append(dif)        
+        vec_dif.append(dif)
         axarr[j].plot(p_shifts-p_shifts_ob)
         axarr[j].axhline(0)
         axarr[j].set_title(fref.split('/')[-1]+'offset: '+str(np.around(dif,5)))
@@ -751,7 +773,7 @@ for fsim in comp_list:
 
     mjd,mjd0      = ferosutils.mjd_fromheader(h)
     ronoise, gain = ferosutils.get_RG(pyfits.getheader(fsim))
-    
+
     # Object name
     obname    = h[0].header['OBJECT']
     observer  = h[0].header['OBSERVER']
@@ -823,10 +845,10 @@ for fsim in comp_list:
 
     # Moon Phase Calculations
 
-    gobs      = ephem.Observer()  
-    gobs.name = 'Eso2.2'  
-    gobs.lat  = rad(latitude)  # lat/long in decimal degrees  
-    gobs.long = rad(longitude) 
+    gobs      = ephem.Observer()
+    gobs.name = 'Eso2.2'
+    gobs.lat  = rad(latitude)  # lat/long in decimal degrees
+    gobs.long = rad(longitude)
     gobs.date = h[0].header['DATE-OBS'][:10] + ' ' + h[0].header['DATE-OBS'][11:]
     mephem    = ephem.Moon()
     mephem.compute(gobs)
@@ -837,7 +859,7 @@ for fsim in comp_list:
     lunation,moon_state,moonsep,moonvel = GLOBALutils.get_lunar_props(ephem,gobs,Mcoo,Mp,Sp,res,ra,dec)
     refvel = bcvel_baryc + moonvel
     print '\t\tRadial Velocity of sacttered moonlight:',refvel
- 
+
     ThAr_Ne_ref_m       = ThAr_Ne_ref
     ThAr_Ne_ref_dates_m = ThAr_Ne_ref_dates
 
@@ -879,7 +901,7 @@ for fsim in comp_list:
         hdu = GLOBALutils.update_header(hdu,'HIERARCH SHUTTER START UT',  h[0].header['DATE-OBS'][11:])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH TEXP (S)',h[0].header['EXPTIME'])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH BARYCENTRIC CORRECTION (KM/S)', bcvel_baryc)
-        hdu = GLOBALutils.update_header(hdu,'HIERARCH (LAMBDA_BARY / LAMBDA_TOPO)', lbary_ltopo)    
+        hdu = GLOBALutils.update_header(hdu,'HIERARCH (LAMBDA_BARY / LAMBDA_TOPO)', lbary_ltopo)
         hdu = GLOBALutils.update_header(hdu,'HIERARCH TARGET NAME', obname)
         hdu = GLOBALutils.update_header(hdu,'HIERARCH RA',h[0].header['RA'])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH DEC',h[0].header['DEC'])
@@ -923,7 +945,7 @@ for fsim in comp_list:
         hdu = GLOBALutils.update_header(hdu,'HIERARCH SHUTTER START UT',  h[0].header['DATE-OBS'][11:])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH TEXP (s)',h[0].header['EXPTIME'])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH BARYCENTRIC CORRECTION (KM/S)', bcvel_baryc)
-        hdu = GLOBALutils.update_header(hdu,'HIERARCH (LAMBDA_BARY / LAMBDA_TOPO)', lbary_ltopo)    
+        hdu = GLOBALutils.update_header(hdu,'HIERARCH (LAMBDA_BARY / LAMBDA_TOPO)', lbary_ltopo)
         hdu = GLOBALutils.update_header(hdu,'HIERARCH TARGET NAME', obname)
         hdu = GLOBALutils.update_header(hdu,'HIERARCH RA',h[0].header['RA'])
         hdu = GLOBALutils.update_header(hdu,'HIERARCH DEC',h[0].header['DEC'])
@@ -942,7 +964,7 @@ for fsim in comp_list:
         hdu = GLOBALutils.update_header(hdu,'HIERARCH SMOONALT',str(mephem.alt))
 
         # get ThAr closest in time
-        indice = sorted_ThAr_Ne_dates[refidx]	
+        indice = sorted_ThAr_Ne_dates[refidx]
         hdu = GLOBALutils.update_header(hdu,'HIERARCH THAR REF',ThAr_Ne_ref_m[indice].split('/')[-1][:-5]+'_sp_ob.fits')
         hdu = GLOBALutils.update_header(hdu,'HIERARCH THAR REF CO',ThAr_Ne_ref_m[indice].split('/')[-1][:-5]+'_sp_co.fits')
         thar_fits_ob = dirout + ThAr_Ne_ref_m[indice].split('/')[-1][:-4]+'spec.ob.fits.S'
@@ -987,7 +1009,7 @@ for fsim in comp_list:
 					 order_s+thar_end, thar_order, order, wei, rmsmax=100, \
 					 minlines=30,FixEnds=False,Dump_Argon=dumpargon,\
 					 Dump_AllLines=True, Cheby=use_cheby,porder=5,del_width=4.0)
-                
+
                 All_Pixel_Centers_co = np.append( All_Pixel_Centers_co, pixel_centers )
                 All_Wavelengths_co   = np.append( All_Wavelengths_co, wavelengths )
                 All_Orders_co        = np.append( All_Orders_co, np.zeros( len(pixel_centers) ) + order )
@@ -1011,12 +1033,12 @@ for fsim in comp_list:
             good_quality = True
             if (precision > 5):
                 good_quality = False
-		p_shift = 0.   
+		p_shift = 0.
             p_shifts.append(p_shift)
             p_mjds.append(mjd)
 
             spec_co = np.zeros((2,n_useful,len(thar_order)))
-            equis = np.arange( len(thar_order) )        
+            equis = np.arange( len(thar_order) )
             order = o0
 
             while order < n_useful+o0:
@@ -1039,7 +1061,7 @@ for fsim in comp_list:
             hdu = GLOBALutils.update_header(hdu,'HIERARCH WAVSOL ERROR', precision, '[m/s]')
 
         # Apply new wavelength solution including barycentric correction
-        equis = np.arange( data.shape[1] )        
+        equis = np.arange( data.shape[1] )
         order = o0
         temp_spec = np.zeros((n_useful,data.shape[1]))
         while order < n_useful+o0:
@@ -1072,7 +1094,7 @@ for fsim in comp_list:
                 L1  = np.where( fn == 0 )[0]
                 L2  = np.where( fn2 == 0 )[0]
                 L = np.unique(np.hstack([L1,L2]))
-                spec[3,oss,:] = spec[1,oss,:] / S_flat_ob_n[order,1,:] - sci_S_co[order,1] /  S_flat_co_n[order,1,:] 
+                spec[3,oss,:] = spec[1,oss,:] / S_flat_ob_n[order,1,:] - sci_S_co[order,1] /  S_flat_co_n[order,1,:]
                 spec[4,oss,:] = sci_S_ob[order,2,:] * ( S_flat_ob_n[order,1,:] ** 2 )	#OJO cambiar esto
                 spec[3,oss,L] = 0.
                 spec[4,oss,L] = 0.
@@ -1086,7 +1108,7 @@ for fsim in comp_list:
             oss = order-o0
             L  = np.where( spec[1,oss] != 0 )
             ccoef = GLOBALutils.get_cont_single(spec[0,oss],spec[3,oss],spec[4,oss],ll=1.5,lu=5,nc=nconts[oss])
-            spec[5,oss,:][L] = spec[3,oss,L] / np.polyval(ccoef,spec[0,oss][L]) 
+            spec[5,oss,:][L] = spec[3,oss,L] / np.polyval(ccoef,spec[0,oss][L])
 	    #plot(spec[0,oss,:],spec[3,oss,:])
 	    #plot(spec[0,oss,:][L],np.polyval(ccoef,spec[0,oss][L]))
             nJ = np.where(np.isnan(spec[5,oss])==True)[0]
@@ -1107,7 +1129,7 @@ for fsim in comp_list:
             NN            = np.average(dlambda_dx)
             dlambda_dx    /= NN
 
-            spec[9,oss,:][L]  = spec[5,oss,:][L] * (dlambda_dx[L] ** 1) 
+            spec[9,oss,:][L]  = spec[5,oss,:][L] * (dlambda_dx[L] ** 1)
             spec[10,oss,:][L] = spec[6,oss,:][L] / (dlambda_dx[L] ** 2)
             order+=1
 	#show()
@@ -1132,7 +1154,7 @@ for fsim in new_sky:
 	obname   = h[0].header['OBJECT']
 	mjd,mjd0 = ferosutils.mjd_fromheader(h)
 	if len(p_mjds) > 1:
-		p_shift  = scipy.interpolate.splev(mjd,tck_shift) 
+		p_shift  = scipy.interpolate.splev(mjd,tck_shift)
 	else:
 		p_shift = 0.
 	fout = 'proc/' + obname + '_' + h[0].header['DATE-OBS'][:4] + h[0].header['DATE-OBS'][5:7] +\
@@ -1247,7 +1269,7 @@ if (not JustExtract):
 
         mask_hw_wide = av_m * disp / (GLOBALutils.Constants.c/1.0e3)
         ml_v = av_m - mask_hw_wide
-        mh_v = av_m + mask_hw_wide 
+        mh_v = av_m + mask_hw_wide
 
         print '\t\t\tComputing the CCF...'
 	boot_ind = np.arange(spec.shape[1])
@@ -1271,7 +1293,7 @@ if (not JustExtract):
                 rvels, rxc_av, rpred, rxc_av_orig, rvel0_xc = vels.copy(), xc_av.copy(), pred.copy(), xc_av_orig.copy(), vel0_xc
                 xc_av_rough = xc_av
                 vels_rough  = vels
-    	
+
                 vel_width = np.maximum( 20.0, 6*disp )
 
                 vels, xc_full, sn, nlines_ccf, W_ccf =\
@@ -1292,7 +1314,6 @@ if (not JustExtract):
 
                 p1,XCmodel,p1gau,XCmodelgau,Ls2 = GLOBALutils.XC_Final_Fit( vels, xc_av , sigma_res = 4, horder=8, moonv = refvel, moons = moon_sig, moon = False)
                 moonmatters = False
-
                 if (know_moon and here_moon):
                     moonmatters = True
                     ismoon = True
@@ -1311,11 +1332,11 @@ if (not JustExtract):
                 #print p1gau[1]
                 if (not known_sigma):
                     disp = np.floor(p1gau[2])
-                    if (disp < 3.0): 
+                    if (disp < 3.0):
                         disp = 3.0
                     mask_hw_wide = av_m * disp / (GLOBALutils.Constants.c/1.0e3)
                     ml_v = av_m - mask_hw_wide
-                    mh_v = av_m + mask_hw_wide            
+                    mh_v = av_m + mask_hw_wide
                     known_sigma = True
                 else:
                     cond = False
@@ -1338,11 +1359,11 @@ if (not JustExtract):
 
             if not avoid_plot:
                 GLOBALutils.plot_CCF(xc_dict,moon_dict,path=ccf_pdf)
-          
+
 	    airmass  = h[0].header['ESO TEL AIRM START']
         seeing   = h[0].header['ESO TEL AMBI FWHM START']
         #moonsep  = h[0].header['ESO TEL MOON DIST']
-        TEXP = h[0].header['EXPTIME']        
+        TEXP = h[0].header['EXPTIME']
 
         if sp_type=='G2':
             if T_eff < 6000:
@@ -1381,11 +1402,11 @@ if (not JustExtract):
             RVerr2 = RVerr * depth_fact
 
         if (RVerr2 <= 0.007):
-            RVerr2 = 0.007	
+            RVerr2 = 0.007
 
-        RV     = np.around(p1gau_m[1],4)  
-        BS     = np.around(SP,4) 
-        BS2     = np.around(SP2,4)   
+        RV     = np.around(p1gau_m[1],4)
+        BS     = np.around(SP,4)
+        BS2     = np.around(SP2,4)
         RVerr2 = np.around(RVerr2,4)
         BSerr  = np.around(BSerr,4)
 

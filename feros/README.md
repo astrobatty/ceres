@@ -29,7 +29,7 @@ cd ./ceres
 
 As `ceres` is written in Python 2, it is suggested to install it within a conda environment:
 ```bash
-conda create -n ceres python=2.7 numpy scipy matplotlib astropy pycurl PyAstronomy ephem
+conda create -n ceres python=2.7 numpy scipy matplotlib astropy pycurl ephem
 
 conda activate ceres
 ```
@@ -48,9 +48,11 @@ After this the package can be install via:
 python install.py
 ```
 
-Finally install the stable version of `statsmodels`:
+Finally install the stable version of `statsmodels` and `PyAstronomy`:
 ```bash
 conda install -c anaconda statsmodels
+
+pip install PyAstronomy
 ```
 
 ## Common fails:
@@ -59,7 +61,7 @@ If `gcc` fails due to missing `-lgls`, check GSL path:
 pkg-config --cflags --libs gsl && gsl-config --version
 ```
 
-and add the printed paths to -I and -L options within the problematic setup.py file.
+and set `gsl_path` in the install.py file.
 
 If there is no GSL installed, install it on Linux via
 ```bash

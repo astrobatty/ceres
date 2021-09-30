@@ -9,5 +9,5 @@ if os.access('../../gsl.temp',os.F_OK):
 else:
     path = '/usr/local'
 
-module =Extension('FunNorm', sources = ['FunNorm.c'],libraries=['gsl','gslcblas','m'],library_dirs=[path + '/lib'],include_dirs=[numpy.get_include()+'/numpy',path + '/include'])
+module =Extension('FunNorm', sources = ['FunNorm.c'],libraries=['gsl','gslcblas','m'],library_dirs=[path + '/lib', '/opt/local/lib'],include_dirs=[numpy.get_include()+'/numpy',path + '/include', '/opt/local/include'])
 setup(name = 'Funciones creadas por Nestor: Extensiones de C/Python', version = '1.0', ext_modules = [module])

@@ -3,7 +3,7 @@ import numpy
 import os
 """
 According to GSL documentation (http://www.gnu.org/software/gsl/manual/html_node/Shared-Libraries.html), in order to run the different operations one must include the GSL library, the GSLCBLAS library and the math library. To compile in C one must do:
-	
+
 gcc -Wall -c filename.c
 
 And then:
@@ -20,5 +20,5 @@ if os.access('../../gsl.temp',os.F_OK):
     path=open('../../gsl.temp','r').readlines()[0]
 else:
     path = '/usr/local'
-module = Extension('Marsh', sources = ['Marsh.c'],libraries=['gsl','gslcblas','m'], library_dirs=[path+'/lib'], include_dirs=[numpy.get_include(),path+'/include']) 
+module = Extension('Marsh', sources = ['Marsh.c'],libraries=['gsl','gslcblas','m'], library_dirs=[path+'/lib', '/opt/local/lib'], include_dirs=[numpy.get_include(),path+'/include', '/opt/local/include']) 
 setup(name = 'Marsh Algorithm: C/Python Extension ', version = '1.0', ext_modules = [module])

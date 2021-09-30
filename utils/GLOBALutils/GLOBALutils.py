@@ -1,5 +1,5 @@
 import matplotlib
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 
 from astropy.io import fits as pyfits
 import numpy as np

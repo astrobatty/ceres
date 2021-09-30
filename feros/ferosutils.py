@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use("Agg") 
+matplotlib.use("Agg")
 from astropy.io import fits as pyfits
 import numpy as np
 from numpy import median,sqrt,array,exp
@@ -77,7 +77,7 @@ def MedianCombine(ImgList, zero_bo=False, zero='MasterBias.fits'):
         return d, ronoise, gain
     else:
         for i in range(n-1):
-            #print ImgList[i+1] 
+            #print ImgList[i+1]
             h = pyfits.open(ImgList[i+1])[0]
             ot = OverscanTrim(h.data)
 	    ot = b_col(ot)
@@ -102,7 +102,7 @@ def OverscanTrim(d):
     return newdata
 
 def b_col(d):
-	
+
 	d2 = np.zeros(d.shape)
 	ps = [[1675.,4097., 219.],\
 	      [1675.,1780., 222.],\
@@ -178,9 +178,9 @@ def FileClassify(diri, log, lamp='LAMP3'):
 		for line in linesbf:
 			bad_files.append(diri+line[:-1])
 		bf.close()
-    
+
 	all_files = glob.glob(diri+"*fits")
-    
+
 	jj = 0
 	for archivo in all_files:
 
@@ -193,7 +193,7 @@ def FileClassify(diri, log, lamp='LAMP3'):
 
 		if not dump:
 			h = pyfits.open(archivo)
-			print archivo, h[0].header['HIERARCH ESO DPR TYPE']
+			#print archivo, h[0].header['HIERARCH ESO DPR TYPE']
 
 			if h[0].header['HIERARCH ESO DPR TYPE'] == 'OBJECT,WAVE' or h[0].header['HIERARCH ESO DPR TYPE'] == 'VELOC,WAVE':
 				simThAr_sci.append(archivo)
@@ -239,7 +239,7 @@ def FileClassify(diri, log, lamp='LAMP3'):
 					mjd, mjd0 = mjd_fromheader(h)
 					ThArNe_ref_dates.append( mjd )
 				if h[0].header['HIERARCH ESO INS CALMIRR2 ID'] == lamp:
-					
+
 					ThAr_Ne_ref.append(archivo)
 					mjd, mjd0 = mjd_fromheader(h)
 					ThAr_Ne_ref_dates.append( mjd )
@@ -247,7 +247,7 @@ def FileClassify(diri, log, lamp='LAMP3'):
 			elif h[0].header['HIERARCH ESO DPR TYPE'] == 'DARK':
 				darks.append(archivo)
 				dark_times.append(h[0].header['EXPTIME'])
-       
+
 	f.close()
 	biases, bias_dates = np.array(biases), np.array(bias_dates)
 	flats, flat_dates  = np.array(flats), np.array(flat_dates)
@@ -255,7 +255,7 @@ def FileClassify(diri, log, lamp='LAMP3'):
 	IS = np.argsort(bias_dates)
 	biases, bias_dates = biases[IS], bias_dates[IS]
 	IS = np.argsort(flat_dates)
-	flats, flat_dates = flats[IS], flat_dates[IS]   
+	flats, flat_dates = flats[IS], flat_dates[IS]
 
 	return biases, flats, ThArNe_ref, ThAr_Ne_ref, simThAr_sci, simSky_sci, ThArNe_ref_dates, ThAr_Ne_ref_dates, darks, dark_times
 
@@ -263,7 +263,7 @@ def mjd_fromheader(h):
     """
     return modified Julian date from header
     """
-    
+
     datetu = h[0].header['DATE-OBS']
     if len(datetu) < 23:
 	mjd_start = h[0].header['MJD-OBS']
@@ -284,9 +284,9 @@ def mjd_fromheader(h):
     mjd = mjd_start + (fraction * texp) / secinday
 
     return mjd, mjd0
-		
+
 def Lines_mBack(thar, sd,  thres_rel=3, pl=False):
-    """ 
+    """
     Given an extracted ThAr order, return a version where the background has been removed
     """
 
@@ -301,7 +301,7 @@ def Lines_mBack(thar, sd,  thres_rel=3, pl=False):
     lines = FindLines_simple_sigma(d,sd, thres=thres_rel)
     # Now, mask these lines
     mask = np.ones( len(sd) )
-        
+
     for kk in lines:
         #mask region
         if (d[kk] > 10000):
@@ -312,7 +312,7 @@ def Lines_mBack(thar, sd,  thres_rel=3, pl=False):
             mask[kk-3:kk+4] = 0
         else:
             mask[kk-3:kk+4] = 0
-    
+
     # New, final background estimnate
     X = np.array( range( len( d ) ) )
     K = np.where((sd > 0) & (mask > 0))
@@ -328,13 +328,13 @@ def FindLines_simple_sigma(d,sd,thres=3):
     """
     Given an array, find lines above a sigma-threshold
     """
-    L = np.where( (d > (thres*sd)) & (d > 0) )  
+    L = np.where( (d > (thres*sd)) & (d > 0) )
     lines = []
     for i in range(np.shape(L)[1]):
         j = L[0][i]
         if ((d[j] > d[j-1]) & (d[j-1] > d[j-2]) & (d[j] > d[j+1]) & (d[j+1] > d[j+2])):
             lines.append(j)
-    
+
     return lines
 
 ### wavelength calibration routines ###
@@ -351,15 +351,15 @@ def sigma_clip(vec,lim=3.0):
 	return vec
 
 def get_dark(time,dnames,dtimes):
-	print dnames
-	print dtimes
-	print time
+	#print dnames
+	#print dtimes
+	#print time
 	if len(dnames) == 0:
 		return 0.
 	elif len(dnames) == 1:
 		darko = pyfits.getdata(dnames[0])
 		dark  = darko * float(time)/float(dtimes[0])
-		print np.median(darko),np.median(dark)
+		#print np.median(darko),np.median(dark)
 		return darko
 	elif len(dnames) == 2:
 		sc0 = pyfits.getdata(dnames[0]).astype('float')
@@ -368,7 +368,7 @@ def get_dark(time,dnames,dtimes):
 		m = (sc1 - sc0) / (t1 - t0)
 		n = sc1 - m*t1
 		darko =  m*float(time) + n
-		print np.median(sc0),np.median(sc1)
-		print np.median(sc1*time/dtimes[1]),np.median(sc0*time/dtimes[0])
-		print np.median(darko)
+		#print np.median(sc0),np.median(sc1)
+		#print np.median(sc1*time/dtimes[1]),np.median(sc0*time/dtimes[0])
+		#print np.median(darko)
 		return darko

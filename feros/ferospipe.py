@@ -498,7 +498,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
                                                 np.ones(All_Intensities.shape), p0, Cheby=use_cheby,\
                                                 maxrms=MRMS, Inv=Inverse_m,minlines=1200,order0=OO0, \
                                                 ntotal=n_useful,npix=len(thar_order),nx=ncoef_x,nm=ncoef_m)
-        print 'len p1=',len(p1)
+        #print 'len p1=',len(p1)
 
 	"""
 	ejxx = np.arange(4096)
@@ -594,7 +594,7 @@ for i in range(len(sorted_ThAr_Ne_dates)):
 	hdu_co.writeto(dirout + ThAr_Ne_ref[index].split('/')[-1][:-5]+'_sp_co.fits')
 
         # end COMPARISON orders.
-        print 'len p1 to be pickled=',len(p1)
+        #print 'len p1 to be pickled=',len(p1)
         pdict = {'c_p2w':c_p2w,'p1':p1,'mjd':mjd, 'G_pix':G_pix, 'G_ord':G_ord,\
 		 'G_wav':G_wav, 'II':II, 'rms_ms':rms_ms,'G_res':G_res,\
 		 'All_Centroids':All_Centroids, 'All_Wavelengths':All_Wavelengths,\
@@ -631,7 +631,7 @@ if os.access(dirout+'shifts.pkl',os.F_OK):
 else:
     force_shift = True
 #"""
-print len(ThAr_all)
+#print len(ThAr_all)
 if force_shift and len(sorted_ThAr_Ne_dates)>6:
     '''Calculate shifts between each ThAr spectra'''
     f, axarr = plt.subplots(len(sorted_ThAr_Ne_dates), sharex=True,figsize=(5, 30))
@@ -679,7 +679,7 @@ if force_shift and len(sorted_ThAr_Ne_dates)>6:
         if dif < mindif:
             mindif = dif
             difs = j
-        print j, dif
+        #print j, dif
         j+=1
     dct_shfts['vals']=np.array(vec_dif)
     dct_shfts['names']=np.array(vec_nam)

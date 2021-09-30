@@ -582,12 +582,12 @@ def get_zero_order_number(ords,wavs):
 		val = orders*wavs
 		val2 = val/np.add.reduce(val)
 		coef = np.polyfit(ords,val2,1)
-		print coef
+		#print coef
 		pends.append(coef[0])
 		plot(ords,val2)
 	pends = np.array(pends)
 	I = np.argmin(pends**2)
-	print o0s[I]
+	#print o0s[I]
 	xlabel('raw order number')
 	ylabel(' $\lambda_c$*(order number + zero order)')
 	subplot(212)
@@ -595,7 +595,7 @@ def get_zero_order_number(ords,wavs):
 	xlabel('zero order')
 	ylabel('slope')
 	show()
-	print gfdsa
+	#print gfdsa
 
 def Mesh(ycpoly_ob,ycpoly_co):
     """

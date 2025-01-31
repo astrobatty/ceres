@@ -180,8 +180,8 @@ if (pre_process == 1):
     #print gvfds
     c_all = c_all[2:]
     nord_all -= 2
-    I1 = np.arange(0,nord_all,2)
-    I2 = np.arange(1,nord_all+1,2)
+    I1 = np.arange(0,nord_all-1,2)
+    I2 = np.arange(1,nord_all,2)
     c_ob, c_co = c_all[I1], c_all[I2]
     nord_ob, nord_co = len(I1), len(I2)
     print "\t\t"+str(nord_ob)+" object orders found..."

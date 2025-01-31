@@ -6,14 +6,14 @@ Echelle orders, but calibrates only 25 of them, excluding the first 8 orders tha
 ~6730-8230 A wavelength. As this range carries several useful spectral features, we modified
 the code to expand the wavelength coverage. We identified the emission lines in the corresponding
 ThAr spectra, which are used to carry out the new wavelength calibration. The pipeline fits
-polynomials to the beforehand identified pixel value-wavelength pairs in each orders to
+polynomials to the beforehand identified pixel value-wavelength pairs in each order to
 iteratively sigma clip the outliers. Then, these cleaned orders are fitted simultaneously
 using Chebyshev functions to improve the precision of the wavelength solution. To fit the
 pixel value-wavelength pairs in the newly added orders as well, we tested a wide range of
 coefficients and picked the ones where the standard deviation of the residual was approximately
 the same as if only the last 25 orders were used. Unfortunately, in the first 2 orders the
 low number of features in the ThAr spectra makes the line identification unreliable,
-thus it is strongly recommended to exclude the ~8230-9000 A range from further spectral
+thus it is strongly recommended to exclude the ~8230-9000 A range from any further spectral
 analysis.
 
 For precise radial velocity measurements, use the original CERES pipeline!
@@ -34,11 +34,17 @@ conda create -n ceres python=2.7 numpy scipy matplotlib astropy pycurl ephem
 conda activate ceres
 ```
 
-Before installation the python path must be set in `ceres/utils/SSephem/Makefile`. To find out the path use:
+__Note for ARM Mac users:__ since python 2 is no longer supported on ARM Mac, the best way to use this 
+pipeline is to use a Docker image instead of conda:
+```bash
+docker run -it python:2.7 bash
+```
+
+Before installation the python path must be set in `ceres/utils/SSephem/Makefile`. To find out the path, use:
 ```bash
 which python
 ```
-and copy the path without the `/bin/python` at the end, and paste it to the PY_PREFIX in the makefile:
+and copy the path without the `/bin/python` at the end, and paste it to the PY_PREFIX in the SSephem makefile:
 ```bash
 PY_PREFIX := /path/to/your/conda/envs/ceres
 ```
@@ -48,11 +54,11 @@ After this the package can be install via:
 python install.py
 ```
 
-Finally install the stable version of `statsmodels` and `PyAstronomy`:
+Finally, install the stable version of `statsmodels` and `PyAstronomy`:
 ```bash
 conda install -c anaconda statsmodels
 
-pip install PyAstronomy
+pip install quantities==0.12.5 PyAstronomy
 ```
 
 ## Common fails:
@@ -70,13 +76,17 @@ sudo apt-get install libgsl-dev
 
 or on OSX via
 ```bash
-sudo port install gsl
+brew install gsl
 ```
 
 # Usage:
 
-The first step is to remove the low S/N spectra. There is a simple python script, called `remove_faint_ThAr_files.py`.
-This should be run in the data folder, where all the spectra can be found. This will _permanently_ remove
-the "useless" files, thus be sure that there is a back up, because it uses rm!
+The first step is to remove the low S/N ThAr spectra. There is a simple python script, called `remove_faint_ThAr_files.py`.
+This should be copied to and run in the data folder, where all the spectra can be found, by
+```bash
+python remove_faint_ThAr_files.py
+```
+This will _permanently_ remove
+the "useless" files, thus be sure that there is a back-up, because it uses rm!
 
-After this `ferospipe` can be used as usual.
+After this, `ferospipe` can be used as usual.

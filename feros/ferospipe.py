@@ -39,7 +39,7 @@ from scipy import interpolate
 import statsmodels.api as sm
 lowess = sm.nonparametric.lowess
 
-# Recive input parameters
+# Receive input parameters
 parser = argparse.ArgumentParser()
 parser.add_argument('directorio')
 parser.add_argument('-avoid_plot', action="store_true", default=False)
@@ -104,7 +104,7 @@ nconts = np.array([2,2,2,2,2,2,2,2,\
 #    100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,150,200,250,300,350,400,450,500,500,800])
 lim_iz = np.array([0,0,100,200,200,450,550,600,400,500,500,650,700,700,700,700,\
 850,850,900,900,900,1000,1000,1050,1100,1150,1200,1250,1300,\
-1350,1400,1400,800]) #Replace this number of pixels at the begining with 0
+1350,1400,1400,800]) #Replace this number of pixels at the beginning with 0
 
 if dirin[-1] != '/':
     dirin = dirin + '/'
@@ -146,7 +146,7 @@ if ( (os.access(dirout+'Flat.fits',os.F_OK) == False)        or \
      (os.access(dirout+'trace.pkl',os.F_OK) == False)        or \
      (os.access(dirout+'MasterBias.fits',os.F_OK) == False)  or \
          (force_pre_process) ):
-    print "\tNo previous pre-processing files or found"
+    print "\tNo previous pre-processing files are found"
     pre_process = 1
 else:
     print "\tPre-processing files found, going straight to extraction"
@@ -858,7 +858,7 @@ for fsim in comp_list:
     res  = jplephem.object_doppler("Moon", int(mjd), mjd%1, 1, 0.0)
     lunation,moon_state,moonsep,moonvel = GLOBALutils.get_lunar_props(ephem,gobs,Mcoo,Mp,Sp,res,ra,dec)
     refvel = bcvel_baryc + moonvel
-    print '\t\tRadial Velocity of sacttered moonlight:',refvel
+    print '\t\tRadial Velocity of scattered moonlight:',refvel
 
     ThAr_Ne_ref_m       = ThAr_Ne_ref
     ThAr_Ne_ref_dates_m = ThAr_Ne_ref_dates
@@ -1164,7 +1164,7 @@ for fsim in new_sky:
 	hdu.flush()
 	hdu.close()
 
-print "\n\tSarting with the post-processing:"
+print "\n\tStarting with the post-processing:"
 #JustExtract = True
 if (not JustExtract):
     for fsim in comp_list:

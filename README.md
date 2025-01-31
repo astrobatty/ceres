@@ -1,13 +1,13 @@
 # ceres
 
-__This version is built to extend the wavelength coverage of the FEROS pipeline! For installation instructions check this [README](https://github.com/astrobatty/ceres/blob/feros_extended_wavelength/feros/README.md).__
+__This version is built to extend the wavelength coverage of the FEROS pipeline! For installation and other instructions, check this [README](https://github.com/astrobatty/ceres/blob/feros_extended_wavelength/feros/README.md)!__
 
 A set of pipelines and routines for echelle spectrographs.
 
 Authors: Rafael Brahm, Andrés Jordán, Néstor Espinoza. If you make use of this code, please cite [Brahm et al 2017](https://ui.adsabs.harvard.edu/#abs/2017PASP..129c4002B/abstract).
 
 # About the code
-The principal goal of CERES is the developement of fully automated pipelines for the reduction, extraction and analysis of echelle spectrograph data. CERES currently counts with dedicated pipelines for 13 different instruments, which are included in the repository: APO3.5m/ARCES, CAHA2.2m/CAFE, CFHT3.6m/ESPaDONs, Euler1.2m/Coralie, DuPont2.5m/Echelle, MPG2.2m/FEROS, ESO1.0m/FIDEOS, ESO3.6m/HARPS, KECK10m/HIRES, MAGELLAN6.5m/MIKE, MALLEGAN6.5m/PFS, NOT2.5m/FIES, PUC0.5m/PUCHEROS. These processing recipes can be used as a reference for developing pipelines for new instruments. A detailed decription of the structure and performance of these pipelines can be found in [Brahm et al 2017](https://ui.adsabs.harvard.edu/#abs/2017PASP..129c4002B/abstract). The standard output of the pipelines is a fits cube with the optimally extracted, wavelength calibrated and instrumetal drift corrected spectrum for each of the science images. Additionally, CERES includes routines for the computation of precise radial velocities and bisector spans via the cross-correlation method, and an automated algorithm to obtain an estimate of the atmospheric parameters of the observed star.
+The principal goal of CERES is the development of fully automated pipelines for the reduction, extraction and analysis of echelle spectrograph data. CERES currently counts with dedicated pipelines for 13 different instruments, which are included in the repository: APO3.5m/ARCES, CAHA2.2m/CAFE, CFHT3.6m/ESPaDONs, Euler1.2m/Coralie, DuPont2.5m/Echelle, MPG2.2m/FEROS, ESO1.0m/FIDEOS, ESO3.6m/HARPS, KECK10m/HIRES, MAGELLAN6.5m/MIKE, MALLEGAN6.5m/PFS, NOT2.5m/FIES, PUC0.5m/PUCHEROS. These processing recipes can be used as a reference for developing pipelines for new instruments. A detailed description of the structure and performance of these pipelines can be found in [Brahm et al 2017](https://ui.adsabs.harvard.edu/#abs/2017PASP..129c4002B/abstract). The standard output of the pipelines is a fits cube with the optimally extracted, wavelength calibrated and instrumental drift corrected spectrum for each of the science images. Additionally, CERES includes routines for the computation of precise radial velocities and bisector spans via the cross-correlation method, and an automated algorithm to obtain an estimate of the atmospheric parameters of the observed star.
 
 # Usage
 In order to run one of the pipelines, you have to be in the CERES directory where the pipeline for the instrument of interest lies and run the corresponding:
@@ -24,7 +24,7 @@ cd ceres/feros
 python ferospipe.py /path/to/the/raw/data/to/be/processed
 ```
 
-Additionally you can specify some options in order to modify some of the processing steps. The available options are:
+Additionally, you can specify some options in order to modify some of the processing steps. The available options are:
 
     -avoid_plot     if activated, the code will not generate a pdf file with the plot of the computed CCF.
     -dirout         path to the directory where the pipeline products will be placed. The default path will be a
@@ -39,13 +39,13 @@ Additionally you can specify some options in order to modify some of the process
     -ofind          only valid for slit spectrographs. Name of the image that will be used to identify
                     and trace the echelle orders.
 
-For example, if you want your output directory to bee foo/, you don't want to generate the CCF plots, you want to perform the spectral classification, you want to use 10 CPU cores, and you want to process only the data of the target called HATS-17, then you would do:
+For example, if you want your output directory to be `foo/`, you don't want to generate the CCF plots, you want to perform the spectral classification, you want to use 10 CPU cores, and you want to process only the data of the target called HATS-17, then you would do:
 
 ```
 python ferospipe.py /path/to/the/raw/data/to/be/processed -dirout foo/ -avoid_plot -do_class -npools 10 -o2do HATS-17
 ```
 
-The auxiliary file mentioned above (reffile) corresponds to a plain text file that can be used to give data for particular targets in order to improve the precision in the radial velocity estimation. The file should contain 8 comma-sparated colummns containing the following information:
+The auxiliary file mentioned above (reffile) corresponds to a plain text file that can be used to give data for particular targets in order to improve the precision in the radial velocity estimation. The file should contain 8 comma-separated columns containing the following information:
 
     1-  name of the target as specified in the image header.
     2-  right ascension of the target (J2000) with format hh:mm:ss.
@@ -66,16 +66,16 @@ Here is an example of a reffile:
 
 If the pipeline doesn't find any reffile, it uses the coordinates found in the image header to compute the barycentric correction and uses the G2 mask to compute the CCF.
 
-Additionally, there are other two auxiliary files that can be placed in the same directory of the raw images for improving the reductions. A file called 'bad_files.txt' can be used to list all the images of the raw directory that should be ignored by the pipeline. Each line of the bad_files file must have the name of the image without the complete path. Another file named 'moon_corr.txt' can be used to specify the images for which the CCF computation will include a double gaussian fit in order to correct the radial velocity for the effects of scattered moonlight contamination.
+Additionally, there are other two auxiliary files that can be placed in the same directory of the raw images for improving the reductions. A file called `bad_files.txt` can be used to list all the images of the raw directory that should be ignored by the pipeline. Each line of the `bad_files.txt` file must have the name of the image without the complete path. Another file named `moon_corr.txt` can be used to specify the images for which the CCF computation will include a double gaussian fit in order to correct the radial velocity for the effects of scattered moonlight contamination.
 
 # Output
-While the directory specified in the dirout directory will contain several intermediate reduction files, the final results will be placed in the directory 'proc/'. This directory can contain up to three types of files:
+While the directory specified in the dirout directory will contain several intermediate reduction files, the final results will be placed in the directory `proc/`. This directory can contain up to three types of files:
 
    1. .fits files with the extracted and wavelength calibrated spectra.
    1. .pdf files that show the CCF plots.
    1. a text file (results.txt) that contains a summary of the results of the reduction including the radial velocity measurements and the atmospheric parameters.
 
-The .fits files are data cubes with dimensions (10,nords,npix), where nords are the total number of processed echelle orders, and npix in the number of pixels in the dispersion direction. The ten entries in the first dimension correspond to:
+The .fits files are data cubes with dimensions (11,nords,npix), where nords are the total number of processed echelle orders, and npix is the number of pixels in the dispersion direction. The ten entries in the first dimension correspond to:
 
     0-  Wavelength
     1-  Extracted Flux
@@ -89,7 +89,7 @@ The .fits files are data cubes with dimensions (10,nords,npix), where nords are 
     9-  Continumm normalized flux multiplied by the derivative of the wavelength with respect to the pixels
     10- Corresponding error of the 9th entrance
 
-The colummns in the results.txt file are the following:
+The columns in the results.txt file are the following:
 
     0-  Object name
     1-  BJD
@@ -111,7 +111,7 @@ The colummns in the results.txt file are the following:
     17- path to the CCF plot file
 
 # Dependencies
-CERES has been succesfully tested with python2.6 and python2.7 on OS X and Linux systems.
+CERES has been successfully tested with python2.6 and python2.7 on OS X and Linux systems.
 
 Some python packages need to be installed:
 
@@ -133,14 +133,16 @@ Additionally:
    1. gcc, g++, gfortran
    1. gsl
 
-are required. All of the above can be install using homebrew on OSX, e.g.:
+are required. All of the above can be installed using homebrew on OSX, e.g.:
 
 ```brew install swig, gcc, gsl```
 
 # Installation
-The python code does not need any previous installation. However, CERES uses some C, C++, and fortran routines that must be compiled in order to be called from python by the pipelines. Before installation it is necessary to check and modify some variables of the installation files of these codes.
+__Be sure to check this [README](https://github.com/astrobatty/ceres/blob/feros_extended_wavelength/feros/README.md) first!__
 
-First, it must be checked if the default f2py version is compatible with the default python version. If that is not the case, the file named "Proceso_f2py" in ceres/utils/CCF must be modified in order to point to the compatible f2py binary file.
+The python code does not need any previous installation. However, CERES uses some C, C++, and fortran routines that must be compiled in order to be called from python by the pipelines. Before installation, it is necessary to check and modify some variables of the installation files of these codes.
+
+First, it must be checked if the default `f2py` version is compatible with the default python version. If that is not the case, the file named "Proceso_f2py" in ceres/utils/CCF must be modified in order to point to the compatible `f2py` binary file.
 
 CERES uses the [SSephem](http://www.cv.nrao.edu/~rfisher/Python/py_solar_system.html) package coupled to the [SOFA](http://www.iausofa.org/) C functions for computing the barycentric velocity corrections. A version of this package with minor modifications is included in the CERES repository. In order to install this package, it has to be checked that the ceres/utils/SSephem/Makefile points to the correct Python, SWIG, and numpy paths. Edit the lines:
 
@@ -149,9 +151,9 @@ PY_PREFIX := /usr/local
 SWIG = /usr/local/bin/swig
 ```
 
-SSephem requires also three separete files for running: the binary solar system ephemeris, a leap-second table, and a UT1 - UTC offset table. These three files are downloaded during the CERES installation. However, the latter two files should be periodically updated, which can be easily done by reinstalling CERES.
+SSephem requires also three separate files for running: the binary solar system ephemeris, a leap-second table, and a UT1 - UTC offset table. These three files are downloaded during the CERES installation. However, the latter two files should be periodically updated, which can be easily done by reinstalling CERES.
 
-After checking the C, C++, and fortran installation files, CERES can be istalled with the following command:
+After checking the C, C++, and fortran installation files, CERES can be installed with the following command:
 
 ```python install.py```
 
@@ -161,7 +163,7 @@ For uninstalling CERES you can enter:
 
 # Spectral Classification Module
 
-In order to use the automated spectral classification routines (-do_class option), a set of synthetic spectra is required. In particular, CERES uses a modified version of the [Coelho et al 2005 models](http://adsabs.harvard.edu/abs/2005A%26A...443..735C), where the models have been reduced in wavelength coverage, degraded in resolution and v*sin(i), and reduced in sampling. This grid of models can be downloaded from this [link](http://www.astro.puc.cl/~rbrahm/coelho_05_red4_R40.tar.gz) (2.7 GB) and they should be placed in data/COELHO_MODELS:
+In order to use the automated spectral classification routines (`-do_class` option), a set of synthetic spectra is required. In particular, CERES uses a modified version of the [Coelho et al 2005 models](http://adsabs.harvard.edu/abs/2005A%26A...443..735C), where the models have been reduced in wavelength coverage, degraded in resolution and $v*\sin(\rm i)$, and reduced in sampling. This grid of models can be downloaded from this [link](http://www.astro.puc.cl/~rbrahm/coelho_05_red4_R40.tar.gz) (2.7 GB) and they should be placed in data/COELHO_MODELS:
 
     mkdir ceres/data/COELHO_MODELS
     cd ceres/data/COELHO_MODELS
